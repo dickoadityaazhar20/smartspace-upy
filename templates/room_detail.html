@@ -47,9 +47,8 @@
 
             <!-- Room Image -->
             <div class="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-lg">
-                {% if room.foto_ruangan %}
-                <img src="{{ room.foto_ruangan.url }}" alt="{{ room.nomor_ruangan }}"
-                    class="w-full h-full object-cover">
+                {% if room.get_foto_url %}
+                <img src="{{ room.get_foto_url }}" alt="{{ room.nomor_ruangan }}" class="w-full h-full object-cover">
                 {% else %}
                 <!-- Dynamic Placeholder -->
                 {% if room.tipe_ruangan == 'Aula' %}

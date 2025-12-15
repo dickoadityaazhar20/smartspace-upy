@@ -67,7 +67,20 @@ class Room(models.Model):
         verbose_name='Fasilitas',
         help_text='Daftar fasilitas ruangan (satu fasilitas per baris, tekan Enter untuk menambah)'
     )
-    foto_ruangan = models.ImageField(upload_to='ruangan/', blank=True, null=True, verbose_name='Foto Ruangan')
+    foto_ruangan = models.ImageField(upload_to='ruangan/', blank=True, null=True, verbose_name='Upload Foto')
+    foto_url = models.URLField(
+        blank=True, 
+        null=True, 
+        verbose_name='URL Gambar',
+        help_text='Alternatif: masukkan URL langsung ke gambar'
+    )
+    foto_drive_id = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        verbose_name='Google Drive ID',
+        help_text='Alternatif: masukkan ID file dari Google Drive (contoh: 1aBcDeFgHiJkLmNoPqRs)'
+    )
     is_active = models.BooleanField(default=True, verbose_name='Aktif')
     
     # CMS Fields
@@ -97,6 +110,17 @@ class Room(models.Model):
     
     def __str__(self):
         return f"{self.nomor_ruangan} - {self.get_tipe_ruangan_display()}"
+    
+    @property
+    def get_foto_url(self):
+        """Return foto URL dengan prioritas: upload > url > drive > None"""
+        if self.foto_ruangan:
+            return self.foto_ruangan.url
+        elif self.foto_url:
+            return self.foto_url
+        elif self.foto_drive_id:
+            return f"https://drive.google.com/uc?export=view&id={self.foto_drive_id}"
+        return None
     
     @property
     def fasilitas_list(self):
@@ -398,3 +422,83 @@ class Testimonial(models.Model):
         elif self.rating > 5:
             self.rating = 5
         super().save(*args, **kwargs)
+
+
+class Feedback(models.Model):
+    """Model untuk Kritik dan Saran dari User"""
+    
+    class Category(models.TextChoices):
+        KRITIK = 'kritik', 'Kritik'
+        SARAN = 'saran', 'Saran'
+        LAINNYA = 'lainnya', 'Lainnya'
+    
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='feedbacks',
+        verbose_name='User'
+    )
+    nama = models.CharField(max_length=100, verbose_name='Nama')
+    email = models.EmailField(verbose_name='Email')
+    category = models.CharField(
+        max_length=20, 
+        choices=Category.choices,
+        default=Category.SARAN,
+        verbose_name='Kategori'
+    )
+    subject = models.CharField(max_length=200, verbose_name='Subjek')
+    message = models.TextField(verbose_name='Pesan')
+    is_read = models.BooleanField(default=False, verbose_name='Sudah Dibaca')
+    admin_response = models.TextField(blank=True, verbose_name='Respon Admin')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Kritik & Saran'
+        verbose_name_plural = 'Kritik & Saran'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.get_category_display()}: {self.subject[:50]}"
+
+
+class ActivityLog(models.Model):
+    """Model untuk Activity Log Admin"""
+    
+    class ActionType(models.TextChoices):
+        CREATE = 'create', 'Create'
+        UPDATE = 'update', 'Update'
+        DELETE = 'delete', 'Delete'
+        APPROVE = 'approve', 'Approve'
+        REJECT = 'reject', 'Reject'
+    
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True,
+        related_name='activity_logs',
+        verbose_name='User'
+    )
+    action = models.CharField(
+        max_length=20, 
+        choices=ActionType.choices,
+        verbose_name='Aksi'
+    )
+    model_name = models.CharField(max_length=50, verbose_name='Model')
+    object_id = models.PositiveIntegerField(verbose_name='Object ID')
+    object_repr = models.CharField(max_length=200, verbose_name='Object')
+    changes = models.JSONField(default=dict, blank=True, verbose_name='Perubahan')
+    ip_address = models.GenericIPAddressField(null=True, blank=True, verbose_name='IP Address')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Activity Log'
+        verbose_name_plural = 'Activity Logs'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user} - {self.get_action_display()} {self.model_name} ({self.object_repr})"

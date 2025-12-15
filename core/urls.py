@@ -44,5 +44,9 @@ urlpatterns = [
     
     # AI Chat API
     path('api/chat/', views.api_chat, name='api_chat'),
+    
+    # Feedback API (Kritik & Saran)
+    path('feedback/', views.feedback_page, name='feedback'),
+    path('api/feedback/submit/', views.api_feedback_submit, name='api_feedback_submit'),
 ]
 

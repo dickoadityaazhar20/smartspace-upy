@@ -73,8 +73,12 @@ class RoomAdmin(ModelAdmin):
         ('Informasi Ruangan', {
             'fields': ('nomor_ruangan', 'tipe_ruangan', 'kapasitas')
         }),
+        ('Foto Ruangan', {
+            'fields': ('foto_ruangan', 'foto_url', 'foto_drive_id'),
+            'description': 'Pilih SATU sumber foto. Prioritas: Upload > URL > Google Drive ID'
+        }),
         ('Detail & Fasilitas', {
-            'fields': ('fasilitas', 'foto_ruangan', 'is_active')
+            'fields': ('fasilitas', 'is_active')
         }),
         ('Deskripsi Ruangan', {
             'fields': ('deskripsi',),
@@ -272,3 +276,106 @@ class TestimonialAdmin(ModelAdmin):
             'description': 'Aktifkan untuk menampilkan di homepage. Urutan kecil tampil duluan.'
         }),
     )
+
+
+# Feedback Admin - Kritik & Saran
+from .models import Feedback, ActivityLog
+
+@admin.action(description='✅ Tandai sudah dibaca')
+def mark_as_read(modeladmin, request, queryset):
+    updated = queryset.update(is_read=True)
+    modeladmin.message_user(request, f'{updated} feedback ditandai sudah dibaca.')
+
+@admin.action(description='📩 Tandai belum dibaca')
+def mark_as_unread(modeladmin, request, queryset):
+    updated = queryset.update(is_read=False)
+    modeladmin.message_user(request, f'{updated} feedback ditandai belum dibaca.')
+
+@admin.register(Feedback)
+class FeedbackAdmin(ModelAdmin):
+    list_display = ('get_category_badge', 'subject', 'get_message_preview', 'is_read', 'created_at')
+    list_filter = ('category', 'is_read', 'created_at')
+    search_fields = ('subject', 'message')
+    ordering = ('-created_at',)
+    list_per_page = 20
+    actions = [mark_as_read, mark_as_unread]
+    
+    def get_category_badge(self, obj):
+        from django.utils.html import format_html
+        colors = {
+            'kritik': ('bg-red-100', 'text-red-700'),
+            'saran': ('bg-blue-100', 'text-blue-700'),
+            'lainnya': ('bg-gray-100', 'text-gray-700'),
+        }
+        bg, text = colors.get(obj.category, ('bg-gray-100', 'text-gray-700'))
+        return format_html(
+            '<span class="px-2 py-1 rounded-full text-xs font-medium {} {}">{}</span>',
+            bg, text, obj.get_category_display()
+        )
+    get_category_badge.short_description = 'Kategori'
+    
+    def get_message_preview(self, obj):
+        """Show first 50 chars of message"""
+        if len(obj.message) > 50:
+            return obj.message[:50] + '...'
+        return obj.message
+    get_message_preview.short_description = 'Preview Pesan'
+    
+    fieldsets = (
+        ('Feedback Anonim', {
+            'fields': ('category', 'subject', 'message'),
+            'description': 'Feedback ini dikirim secara anonim oleh pengguna.'
+        }),
+        ('Status & Respon', {
+            'fields': ('is_read', 'admin_response'),
+            'description': 'Tandai sudah dibaca dan berikan respon jika diperlukan.'
+        }),
+    )
+    
+    readonly_fields = ('category', 'subject', 'message')
+
+
+# Activity Log Admin - Read Only
+@admin.register(ActivityLog)
+class ActivityLogAdmin(ModelAdmin):
+    list_display = ('user', 'get_action_badge', 'model_name', 'object_repr', 'ip_address', 'created_at')
+    list_filter = ('action', 'model_name', 'created_at')
+    search_fields = ('user__first_name', 'user__username', 'model_name', 'object_repr')
+    ordering = ('-created_at',)
+    list_per_page = 50
+    
+    def get_action_badge(self, obj):
+        from django.utils.html import format_html
+        colors = {
+            'create': ('bg-green-100', 'text-green-700', '➕'),
+            'update': ('bg-blue-100', 'text-blue-700', '✏️'),
+            'delete': ('bg-red-100', 'text-red-700', '🗑️'),
+            'approve': ('bg-emerald-100', 'text-emerald-700', '✅'),
+            'reject': ('bg-orange-100', 'text-orange-700', '❌'),
+        }
+        bg, text, icon = colors.get(obj.action, ('bg-gray-100', 'text-gray-700', '📝'))
+        return format_html(
+            '<span class="px-2 py-1 rounded-full text-xs font-medium {} {}">{} {}</span>',
+            bg, text, icon, obj.get_action_display()
+        )
+    get_action_badge.short_description = 'Aksi'
+    
+    fieldsets = (
+        ('Log Detail', {
+            'fields': ('user', 'action', 'model_name', 'object_id', 'object_repr'),
+        }),
+        ('Detail Perubahan', {
+            'fields': ('changes', 'ip_address', 'created_at'),
+        }),
+    )
+    
+    readonly_fields = ('user', 'action', 'model_name', 'object_id', 'object_repr', 'changes', 'ip_address', 'created_at')
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False

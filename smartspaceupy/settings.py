@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
+    'cloudinary_storage',
     'core',
 ]
 
@@ -135,6 +137,11 @@ UNFOLD = {
                         "icon": "chat",
                         "link": "/admin/chat/",
                     },
+                    {
+                        "title": "Kritik & Saran",
+                        "icon": "feedback",
+                        "link": reverse_lazy("admin:core_feedback_changelist"),
+                    },
                 ],
             },
             {
@@ -145,6 +152,17 @@ UNFOLD = {
                         "title": "Testimoni",
                         "icon": "format_quote",
                         "link": reverse_lazy("admin:core_testimonial_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Monitoring",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Activity Log",
+                        "icon": "history",
+                        "link": reverse_lazy("admin:core_activitylog_changelist"),
                     },
                 ],
             },
@@ -270,6 +288,17 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files (Uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Cloudinary Configuration (for production media storage)
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', ''),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', ''),
+}
+
+# Use Cloudinary for media files if credentials are configured
+if os.getenv('CLOUDINARY_CLOUD_NAME'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'

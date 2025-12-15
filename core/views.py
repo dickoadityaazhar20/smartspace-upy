@@ -1125,3 +1125,60 @@ def api_check_booking_conflict(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
+
+# ============================================
+# FEEDBACK API (Kritik & Saran)
+# ============================================
+from .models import Feedback
+
+def feedback_page(request):
+    """Halaman Kritik & Saran untuk user submit feedback"""
+    return render(request, 'feedback.html')
+
+
+@csrf_exempt
+def api_feedback_submit(request):
+    """API endpoint untuk submit feedback Kritik & Saran (Anonymous)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Get data - nama and email are optional (anonymous by default)
+        category = data.get('category', 'saran')
+        subject = data.get('subject', '').strip()
+        message = data.get('message', '').strip()
+        
+        # Only validate subject and message
+        if not subject:
+            return JsonResponse({'success': False, 'message': 'Subjek wajib diisi'}, status=400)
+        if not message:
+            return JsonResponse({'success': False, 'message': 'Pesan wajib diisi'}, status=400)
+        
+        # Validate category
+        valid_categories = ['kritik', 'saran', 'lainnya']
+        if category not in valid_categories:
+            category = 'saran'
+        
+        # Create anonymous feedback
+        feedback = Feedback.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            nama='Anonymous',
+            email='anonymous@feedback.local',
+            category=category,
+            subject=subject,
+            message=message
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Terima kasih! Feedback anonim Anda sudah kami terima.',
+            'feedback_id': feedback.id
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+

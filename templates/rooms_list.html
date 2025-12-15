@@ -67,8 +67,8 @@
             <!-- Room Image -->
             <div class="aspect-square relative overflow-hidden"
                 onclick="window.location.href='{% url 'room_detail' room.pk %}'">
-                {% if room.foto_ruangan %}
-                <img src="{{ room.foto_ruangan.url }}" alt="{{ room.nomor_ruangan }}"
+                {% if room.get_foto_url %}
+                <img src="{{ room.get_foto_url }}" alt="{{ room.nomor_ruangan }}"
                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out">
                 {% else %}
                 {% if room.tipe_ruangan == 'Aula' %}
