@@ -348,10 +348,7 @@
                     {% endif %}
                 </div>
                 <div class="flex-1">
-                    <p class="font-medium text-sm">
-                        {% if message.tags == 'success' %}Berhasil!{% elif message.tags == 'error' %}Error!{% elif
-                        message.tags == 'warning' %}Perhatian!{% else %}Info{% endif %}
-                    </p>
+                    <p class="font-medium text-sm">{% if message.tags == 'success' %}Berhasil!{% elif message.tags == 'error' %}Error!{% elif message.tags == 'warning' %}Perhatian!{% else %}Info{% endif %}</p>
                     <p class="text-sm mt-0.5 opacity-90">{{ message }}</p>
                 </div>
                 <!-- Close Button -->

@@ -729,8 +729,12 @@
         // Validate jumlah tamu
         const jumlahTamu = document.getElementById('jumlah_tamu');
         const jumlahTamuVal = jumlahTamu ? parseInt(jumlahTamu.value) : 0;
+        const maxCapacity = parseInt(document.getElementById('incrementGuestBtn')?.dataset.maxCapacity) || 999;
+
         if (!jumlahTamuVal || jumlahTamuVal < 1) {
             errors.push('❌ Jumlah peserta minimal 1 orang');
+        } else if (jumlahTamuVal > maxCapacity) {
+            errors.push(`❌ Jumlah peserta melebihi kapasitas ruangan (max ${maxCapacity} orang)`);
         }
 
         // Validate tanggal mulai
