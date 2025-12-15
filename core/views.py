@@ -39,11 +39,9 @@ def room_detail(request, pk):
     form_data = {}
     
     if request.method == 'POST':
-        # Ambil data dari form
         nama_lengkap = request.POST.get('nama_lengkap', '')
         tanggal_mulai = request.POST.get('tanggal_mulai', '')
         tanggal_selesai = request.POST.get('tanggal_selesai', '')
-        keperluan = request.POST.get('keperluan', '')
         jumlah_tamu = request.POST.get('jumlah_tamu', '1')
         dokumen = request.FILES.get('dokumen_pendukung', None)
         
@@ -52,7 +50,6 @@ def room_detail(request, pk):
             'nama_lengkap': nama_lengkap,
             'tanggal_mulai': tanggal_mulai,
             'tanggal_selesai': tanggal_selesai,
-            'keperluan': keperluan,
             'jumlah_tamu': jumlah_tamu,
         }
         
@@ -113,9 +110,7 @@ def room_detail(request, pk):
             except ValueError:
                 errors.append('Format tanggal tidak valid')
         
-        if not keperluan:
-            errors.append('Keperluan wajib diisi')
-        
+
         if errors:
             for error in errors:
                 messages.error(request, error)
@@ -130,8 +125,7 @@ def room_detail(request, pk):
                 messages.error(
                     request, 
                     f'Maaf, jam {conflict_start}-{conflict_end} pada tanggal {conflict_date} '
-                    f'sudah dibooking untuk "{conflict.keperluan[:30]}". '
-                    f'Silakan pilih jam lain yang tersedia.'
+                    f'sudah dibooking. Silakan pilih jam lain yang tersedia.'
                 )
             else:
                 # Buat booking baru
@@ -159,7 +153,6 @@ def room_detail(request, pk):
                     tanggal_mulai=dt_mulai,
                     tanggal_selesai=dt_selesai,
                     jumlah_tamu=jumlah_tamu_int,
-                    keperluan=keperluan,
                     dokumen_pendukung=dokumen,
                     status='Pending'
                 )

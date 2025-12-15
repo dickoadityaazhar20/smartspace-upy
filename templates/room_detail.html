@@ -415,8 +415,7 @@
                                     <input type="number" id="jumlah_tamu" name="jumlah_tamu"
                                         value="{% if form_data.jumlah_tamu %}{{ form_data.jumlah_tamu }}{% else %}1{% endif %}"
                                         min="1" max="{{ room.kapasitas }}"
-                                        class="w-16 text-center text-xl font-semibold border-0 bg-transparent focus:ring-0"
-                                        readonly>
+                                        class="w-20 text-center text-xl font-semibold border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary">
                                     <button type="button" id="incrementGuestBtn"
                                         data-max-capacity="{{ room.kapasitas }}"
                                         class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 hover:border-primary hover:text-primary flex items-center justify-center transition-colors shadow-sm">
@@ -472,16 +471,7 @@
                             <input type="hidden" id="tanggal_selesai" name="tanggal_selesai">
                         </div>
 
-                        <!-- Keperluan -->
-                        <div>
-                            <label for="keperluan" class="block text-sm font-medium text-gray-700 mb-1">
-                                Keperluan
-                            </label>
-                            <textarea id="keperluan" name="keperluan" rows="3"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
-                                placeholder="Jelaskan keperluan peminjaman..."
-                                required>{% if form_data.keperluan %}{{ form_data.keperluan }}{% endif %}</textarea>
-                        </div>
+
 
                         <!-- Document Upload -->
                         <div>
@@ -767,11 +757,6 @@
             errors.push('❌ Waktu selesai wajib dipilih');
         }
 
-        // Validate keperluan
-        const keperluan = document.getElementById('keperluan');
-        if (!keperluan || !keperluan.value.trim()) {
-            errors.push('❌ Keperluan peminjaman wajib diisi');
-        }
 
         // Validate datetime logic
         if (startHidden && endHidden && startHidden.value && endHidden.value) {

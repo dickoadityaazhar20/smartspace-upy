@@ -22,13 +22,10 @@ class User(AbstractUser):
         ADMIN = 'Admin', 'Admin'
     
     class Fakultas(models.TextChoices):
-        FKIP = 'FKIP', 'Fakultas Keguruan dan Ilmu Pendidikan'
-        FEB = 'FEB', 'Fakultas Ekonomi dan Bisnis'
-        FT = 'FT', 'Fakultas Teknik'
-        FIKES = 'FIKES', 'Fakultas Ilmu Kesehatan'
-        FISIP = 'FISIP', 'Fakultas Ilmu Sosial dan Ilmu Politik'
-        FAI = 'FAI', 'Fakultas Agama Islam'
-        FPSI = 'FPSI', 'Fakultas Psikologi'
+        FST = 'FST', 'Fakultas Sains Dan Teknologi'
+        FP = 'FP', 'Fakultas Pertanian'
+        FBH = 'FBH', 'Fakultas Bisnis Dan Hukum'
+        FKIP = 'FKIP', 'Fakultas Keguruan Dan Ilmu Pendidikan'
     
     npm_nip = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name='NPM/NIP')
     fakultas = models.CharField(

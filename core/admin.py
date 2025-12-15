@@ -140,9 +140,9 @@ def make_on_process(modeladmin, request, queryset):
 # Booking Admin - Enhanced with Unfold
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin):
-    list_display = ('id', 'get_user_npm', 'get_user_name', 'get_user_fakultas', 'get_user_prodi', 'get_user_angkatan', 'room', 'jumlah_tamu', 'get_tanggal_mulai', 'get_tanggal_selesai', 'keperluan', 'status', 'get_document_link')
+    list_display = ('id', 'get_user_npm', 'get_user_name', 'get_user_fakultas', 'get_user_prodi', 'get_user_angkatan', 'room', 'jumlah_tamu', 'get_tanggal_mulai', 'get_tanggal_selesai', 'status', 'get_document_link')
     list_filter = ('status', 'tanggal_mulai', 'room__tipe_ruangan', 'user__fakultas', 'created_at')
-    search_fields = ('user__npm_nip', 'user__first_name', 'user__last_name', 'room__nomor_ruangan', 'keperluan')
+    search_fields = ('user__npm_nip', 'user__first_name', 'user__last_name', 'room__nomor_ruangan')
     ordering = ('-created_at',)
     date_hierarchy = 'tanggal_mulai'
     list_per_page = 25
@@ -212,7 +212,7 @@ class BookingAdmin(ModelAdmin):
             'fields': ('user',),
         }),
         ('Detail Peminjaman', {
-            'fields': ('room', 'jumlah_tamu', 'tanggal_mulai', 'tanggal_selesai', 'keperluan'),
+            'fields': ('room', 'jumlah_tamu', 'tanggal_mulai', 'tanggal_selesai'),
         }),
         ('Dokumen Pendukung', {
             'fields': ('dokumen_pendukung',),

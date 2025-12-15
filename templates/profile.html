@@ -156,13 +156,10 @@
                     <select id="fakultas"
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
                         <option value="">Pilih Fakultas</option>
-                        <option value="FKIP">Fakultas Keguruan dan Ilmu Pendidikan</option>
-                        <option value="FEB">Fakultas Ekonomi dan Bisnis</option>
-                        <option value="FT">Fakultas Teknik</option>
-                        <option value="FIKES">Fakultas Ilmu Kesehatan</option>
-                        <option value="FISIP">Fakultas Ilmu Sosial dan Ilmu Politik</option>
-                        <option value="FAI">Fakultas Agama Islam</option>
-                        <option value="FPSI">Fakultas Psikologi</option>
+                        <option value="FST">Fakultas Sains Dan Teknologi</option>
+                        <option value="FP">Fakultas Pertanian</option>
+                        <option value="FBH">Fakultas Bisnis Dan Hukum</option>
+                        <option value="FKIP">Fakultas Keguruan Dan Ilmu Pendidikan</option>
                     </select>
                 </div>
 
@@ -170,17 +167,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Program Studi</label>
                     <select id="programStudi"
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
-                        <option value="">Pilih Program Studi</option>
-                        <option value="Teknik Informatika">Teknik Informatika</option>
-                        <option value="Sistem Informasi">Sistem Informasi</option>
-                        <option value="Manajemen">Manajemen</option>
-                        <option value="Akuntansi">Akuntansi</option>
-                        <option value="Psikologi">Psikologi</option>
-                        <option value="Hukum">Hukum</option>
-                        <option value="Pendidikan Guru SD">Pendidikan Guru SD</option>
-                        <option value="Pendidikan Bahasa Inggris">Pendidikan Bahasa Inggris</option>
-                        <option value="Lainnya">Lainnya</option>
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white disabled:bg-gray-100 disabled:cursor-not-allowed">
+                        <option value="">Pilih Fakultas terlebih dahulu</option>
                     </select>
                 </div>
 
@@ -326,16 +314,91 @@
         try {
             const userData = JSON.parse(document.getElementById('userData').textContent);
 
-            // Set Fakultas
-            const fakultasSelect = document.getElementById('fakultas');
-            if (userData.fakultas && fakultasSelect) {
-                fakultasSelect.value = userData.fakultas;
+            // Fakultas to Program Studi mapping (same as base.html)
+            const fakultasProdiMapping = window.fakultasProdiMapping || {
+                'FST': [
+                    'Informatika',
+                    'Teknik Industri',
+                    'Teknologi Rekayasa Elektro Medis',
+                    'Arsitektur',
+                    'Teknik Biomedis',
+                    'Ilmu Keolahragaan',
+                    'Sistem Informasi',
+                    'Gizi',
+                    'Farmasi'
+                ],
+                'FP': [
+                    'Agroteknologi',
+                    'Teknologi Hasil Pertanian'
+                ],
+                'FBH': [
+                    'Akuntansi',
+                    'Manajemen',
+                    'Bisnis Digital',
+                    'Hukum Bisnis',
+                    'Magister Manajemen'
+                ],
+                'FKIP': [
+                    'Pendidikan Vokasional Teknologi Otomotif',
+                    'Pendidikan Matematika',
+                    'Bimbingan dan Konseling',
+                    'Pendidikan Pancasila dan Kewarganegaraan',
+                    'Pendidikan Sejarah',
+                    'Pendidikan Luar Biasa',
+                    'Pendidikan Guru Sekolah Dasar',
+                    'Pendidikan Guru Pendidikan Anak Usia Dini',
+                    'PPG',
+                    'Pendidikan IPS',
+                    'Pendidikan Dasar'
+                ]
+            };
+
+            // Function to update Program Studi dropdown
+            function updateProdiDropdown(fakultasValue, prodiSelect, selectedProdi) {
+                prodiSelect.innerHTML = '';
+
+                if (!fakultasValue) {
+                    prodiSelect.innerHTML = '<option value="">Pilih Fakultas terlebih dahulu</option>';
+                    prodiSelect.disabled = true;
+                    return;
+                }
+
+                const prodiList = fakultasProdiMapping[fakultasValue] || [];
+
+                if (prodiList.length === 0) {
+                    prodiSelect.innerHTML = '<option value="">Tidak ada program studi tersedia</option>';
+                    prodiSelect.disabled = true;
+                    return;
+                }
+
+                prodiSelect.disabled = false;
+                prodiSelect.innerHTML = '<option value="">Pilih Program Studi</option>';
+                prodiList.forEach(prodi => {
+                    const option = document.createElement('option');
+                    option.value = prodi;
+                    option.textContent = prodi;
+                    if (prodi === selectedProdi) {
+                        option.selected = true;
+                    }
+                    prodiSelect.appendChild(option);
+                });
             }
 
-            // Set Program Studi
+            // Set Fakultas
+            const fakultasSelect = document.getElementById('fakultas');
             const prodiSelect = document.getElementById('programStudi');
-            if (userData.program_studi && prodiSelect) {
-                prodiSelect.value = userData.program_studi;
+
+            if (userData.fakultas && fakultasSelect) {
+                fakultasSelect.value = userData.fakultas;
+                // Populate Program Studi dropdown based on fakultas
+                updateProdiDropdown(userData.fakultas, prodiSelect, userData.program_studi);
+            }
+
+            // Add event listener for fakultas change
+            if (fakultasSelect && prodiSelect) {
+                fakultasSelect.addEventListener('change', function () {
+                    updateProdiDropdown(this.value, prodiSelect, null);
+                });
             }
 
             // Set Angkatan
