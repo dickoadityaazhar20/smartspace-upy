@@ -114,12 +114,21 @@ class Room(models.Model):
     @property
     def get_foto_url(self):
         """Return foto URL dengan prioritas: upload > url > drive > None"""
-        if self.foto_ruangan:
-            return self.foto_ruangan.url
-        elif self.foto_url:
+        # Check uploaded file first (must have a name/path)
+        if self.foto_ruangan and self.foto_ruangan.name:
+            try:
+                return self.foto_ruangan.url
+            except Exception:
+                pass  # Fall through to other options
+        
+        # Check URL field
+        if self.foto_url:
             return self.foto_url
-        elif self.foto_drive_id:
+        
+        # Check Google Drive ID
+        if self.foto_drive_id:
             return f"https://drive.google.com/uc?export=view&id={self.foto_drive_id}"
+        
         return None
     
     @property
