@@ -278,7 +278,7 @@ AUTH_USER_MODEL = 'core.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Google Gemini AI Configuration
-GEMINI_API_KEY = 'AIzaSyDm2kccJOS5Ti9fITxuq3uDXLU40W0ZJPE'
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # Resend Email Configuration
 RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
