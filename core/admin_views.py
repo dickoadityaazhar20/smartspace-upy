@@ -330,5 +330,63 @@ def chat_pin_view(request):
             'message': 'Percakapan berhasil di-pin'
         })
         
+
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@staff_member_required
+def admin_dashboard_stats(request):
+    """API view to provide statistics for the Admin Dashboard"""
+    from django.db.models.functions import TruncDate, ExtractWeekDay
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.core.serializers.json import DjangoJSONEncoder
+    from .models import Booking, Room 
+    
+    # 1. Scorecards Data
+    total_bookings = Booking.objects.count()
+    pending_bookings = Booking.objects.filter(status='Pending').count()
+    approved_bookings = Booking.objects.filter(status='Approved').count()
+    active_rooms = Room.objects.filter(is_active=True).count()
+    
+    # 2. Status Distribution (Pie Chart)
+    # Returns list of dicts: [{'status': 'Approved', 'count': 5}, ...]
+    status_counts = list(Booking.objects.values('status').annotate(count=Count('status')))
+    
+    # 3. Bookings Last 30 Days (Line Chart)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    daily_bookings_raw = list(
+        Booking.objects.filter(created_at__gte=thirty_days_ago)
+        .annotate(date=TruncDate('created_at'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+    # Convert date objects to ISO format strings for JSON serialization
+    daily_bookings = [
+        {'date': item['date'].isoformat() if item['date'] else None, 'count': item['count']}
+        for item in daily_bookings_raw
+    ]
+    
+    # 4. Popular Days (Bar Chart)
+    # week_day: 1 (Sunday) to 7 (Saturday)
+    weekly_bookings = list(
+        Booking.objects.annotate(day=ExtractWeekDay('tanggal_mulai'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('day')
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'summary': {
+            'total': total_bookings,
+            'pending': pending_bookings,
+            'approved': approved_bookings,
+            'active_rooms': active_rooms
+        },
+        'status_distribution': status_counts,
+        'daily_trend': daily_bookings,
+        'weekly_popularity': weekly_bookings
+    }, encoder=DjangoJSONEncoder)

@@ -1,0 +1,211 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .dashboard-container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .scorecards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        border: 1px solid #e5e7eb;
+    }
+
+    .card h3 {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+        margin-top: 5px;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        border: 1px solid #e5e7eb;
+        min-height: 350px;
+    }
+
+    .chart-container h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #374151;
+        border-bottom: 2px solid #f3f4f6;
+        padding-bottom: 10px;
+    }
+
+    /* Hide default sidebar/content if we want full override */
+    #content-main {
+        width: 100% !important;
+        float: none !important;
+    }
+
+    #content-related {
+        display: none;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="scorecards">
+        <div class="card">
+            <h3>Total Bookings</h3>
+            <div class="value" id="total-bookings">-</div>
+        </div>
+        <div class="card">
+            <h3>Pending Requests</h3>
+            <div class="value" id="pending-bookings" style="color: #f59e0b;">-</div>
+        </div>
+        <div class="card">
+            <h3>Approved</h3>
+            <div class="value" id="approved-bookings" style="color: #10b981;">-</div>
+        </div>
+        <div class="card">
+            <h3>Active Rooms</h3>
+            <div class="value" id="active-rooms" style="color: #6366f1;">-</div>
+        </div>
+    </div>
+
+    <!-- Main Trend -->
+    <div class="chart-container" style="margin-bottom: 30px;">
+        <h2>📅 Booking Trend (Last 30 Days)</h2>
+        <canvas id="trendChart"></canvas>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-container">
+            <h2>📊 Status Distribution</h2>
+            <canvas id="statusChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>🔥 Busiest Days</h2>
+            <canvas id="dayChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/admin/api/stats/')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) return;
+
+                // Update Scorecards
+                document.getElementById('total-bookings').innerText = data.summary.total;
+                document.getElementById('pending-bookings').innerText = data.summary.pending;
+                document.getElementById('approved-bookings').innerText = data.summary.approved;
+                document.getElementById('active-rooms').innerText = data.summary.active_rooms;
+
+                // 1. Status Chart (Pie)
+                const statusLabels = data.status_distribution.map(item => item.status);
+                const statusValues = data.status_distribution.map(item => item.count);
+                const statusColors = {
+                    'Approved': '#10b981', 'Pending': '#f59e0b',
+                    'Rejected': '#ef4444', 'Cancelled': '#6b7280', 'On Process': '#3b82f6'
+                };
+                const bgColors = statusLabels.map(s => statusColors[s] || '#ccc');
+
+                new Chart(document.getElementById('statusChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusValues,
+                            backgroundColor: bgColors
+                        }]
+                    }
+                });
+
+                // 2. Trend Chart (Line)
+                const trendData = data.daily_trend; // [{date: '2023-01-01', count: 5}, ...]
+                // Should verify data structure. Django .values() might return datetime date objects which JSON serializer handles as strings 'YYYY-MM-DD'
+
+                new Chart(document.getElementById('trendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: trendData.map(d => d.date),
+                        datasets: [{
+                            label: 'New Bookings',
+                            data: trendData.map(d => d.count),
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                // 3. Popular Days (Bar)
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                // Django ExtractWeekDay: 1=Sunday, 7=Saturday
+
+                const daysMap = new Array(8).fill(0); // Index 1-7
+                data.weekly_popularity.forEach(item => {
+                    daysMap[item.day] = item.count;
+                });
+
+                // Reorder to Mon-Sun if preferred, or keep Sun-Sat. Let's do Mon-Sun (Indonesian usually Mon start)
+                // Django: 1=Sun, 2=Mon ... 7=Sat
+                // We want Mon, Tue, Wed, Thu, Fri, Sat, Sun
+                const orderedLabels = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+                const orderedValues = [
+                    daysMap[2], daysMap[3], daysMap[4], daysMap[5], daysMap[6], daysMap[7], daysMap[1]
+                ];
+
+                new Chart(document.getElementById('dayChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: orderedLabels,
+                        datasets: [{
+                            label: 'Bookings per Day',
+                            data: orderedValues,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+            })
+            .catch(err => console.error("Error loading dashboard stats:", err));
+    });
+</script>
+{% endblock %}

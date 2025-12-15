@@ -18,13 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from core.admin_views import chat_list_view, chat_detail_view, chat_send_view, chat_delete_view, chat_delete_conversation_view, chat_poll_view, chat_pin_view, admin_shortcuts_view
+from core.admin_views import chat_list_view, chat_detail_view, chat_send_view, chat_delete_view, chat_delete_conversation_view, chat_poll_view, chat_pin_view, admin_shortcuts_view, admin_dashboard_stats
 
 # Add custom admin URLs to admin.site
 admin.site.get_urls_original = admin.site.get_urls
 
 def custom_admin_urls():
     custom_urls = [
+        path('api/stats/', admin_dashboard_stats, name='admin_dashboard_stats'),
         path('shortcuts/', admin_shortcuts_view, name='admin_shortcuts'),
         path('chat/', chat_list_view, name='chat_list'),
         path('chat/<int:user_id>/', chat_detail_view, name='chat_detail'),
