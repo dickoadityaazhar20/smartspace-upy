@@ -2,4 +2,6 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py seed_rooms && python manage.py setup_admin && gunicorn smartspaceupy.wsgi"
+# IMPORTANT: seed_rooms and setup_admin removed - run manually only for initial setup
+# Running seed_rooms deletes all rooms and recreates dummy data!
+startCommand = "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn smartspaceupy.wsgi"
