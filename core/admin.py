@@ -7,6 +7,13 @@ from .models import User, Room, Booking
 from .email_utils import send_booking_approved_email, send_booking_rejected_email
 
 
+# Export Action for Users
+@admin.action(description='📊 Export ke Excel')
+def export_users_to_excel(modeladmin, request, queryset):
+    from .export_utils import generate_users_excel
+    return generate_users_excel(queryset)
+
+
 # Custom User Admin - Enhanced for SmartSpace UPY with Unfold
 @admin.register(User)
 class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
@@ -15,6 +22,7 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
     search_fields = ('username', 'email', 'npm_nip', 'first_name', 'last_name', 'fakultas', 'program_studi', 'nomor_hp')
     ordering = ('-date_joined',)
     list_per_page = 25
+    actions = [export_users_to_excel]
     
     # Fieldsets for detailed view
     fieldsets = (
@@ -58,6 +66,7 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
         # Search by first_name only starting with search term
         queryset = queryset.filter(first_name__istartswith=search_term)
         return queryset, False
+
 
 
 # Room Admin with Unfold
@@ -137,6 +146,19 @@ def make_on_process(modeladmin, request, queryset):
     modeladmin.message_user(request, f'{updated} peminjaman di-set ke On Process.')
 
 
+# Export Actions for Bookings
+@admin.action(description='📊 Export ke Excel')
+def export_bookings_to_excel(modeladmin, request, queryset):
+    from .export_utils import generate_bookings_excel
+    return generate_bookings_excel(queryset)
+
+
+@admin.action(description='📄 Export ke PDF')
+def export_bookings_to_pdf(modeladmin, request, queryset):
+    from .export_utils import generate_bookings_pdf
+    return generate_bookings_pdf(queryset)
+
+
 # Booking Admin - Enhanced with Unfold
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin):
@@ -146,7 +168,7 @@ class BookingAdmin(ModelAdmin):
     ordering = ('-created_at',)
     date_hierarchy = 'tanggal_mulai'
     list_per_page = 25
-    actions = [make_approved, make_rejected, make_pending, make_on_process]
+    actions = [make_approved, make_rejected, make_pending, make_on_process, export_bookings_to_excel, export_bookings_to_pdf]
     
     # User info display methods
     def get_user_npm(self, obj):
