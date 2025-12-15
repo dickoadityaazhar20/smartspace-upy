@@ -1,0 +1,1486 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.nomor_ruangan }} - KampusSpace{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-room-id="{{ room.pk }}">
+
+    <!-- Back Button -->
+    <a href="{% url 'home' %}" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6 group">
+        <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Kembali ke Daftar Ruangan
+    </a>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="mb-6 space-y-3">
+        {% for message in messages %}
+        <div
+            class="px-4 py-3 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            <div class="flex items-center">
+                {% if message.tags == 'error' %}
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                </svg>
+                {% else %}
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                {% endif %}
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Left Column: Room Info -->
+        <div class="lg:col-span-2 space-y-8">
+
+            <!-- Room Image -->
+            <div class="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-lg">
+                {% if room.foto_ruangan %}
+                <img src="{{ room.foto_ruangan.url }}" alt="{{ room.nomor_ruangan }}"
+                    class="w-full h-full object-cover">
+                {% else %}
+                <!-- Dynamic Placeholder -->
+                {% if room.tipe_ruangan == 'Aula' %}
+                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop"
+                    alt="{{ room.nomor_ruangan }}" class="w-full h-full object-cover">
+                {% elif room.tipe_ruangan == 'Lab' %}
+                <img src="https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=1200&h=800&fit=crop"
+                    alt="{{ room.nomor_ruangan }}" class="w-full h-full object-cover">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200&h=800&fit=crop"
+                    alt="{{ room.nomor_ruangan }}" class="w-full h-full object-cover">
+                {% endif %}
+                {% endif %}
+
+                <!-- Status Badge -->
+                {% if room.is_active %}
+                <div
+                    class="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-full flex items-center shadow-lg">
+                    <span class="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
+                    Tersedia untuk Dipinjam
+                </div>
+                {% else %}
+                <div
+                    class="absolute top-4 left-4 px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-full shadow-lg">
+                    Tidak Tersedia
+                </div>
+                {% endif %}
+
+                <!-- Favorite & Share -->
+                <div class="absolute top-4 right-4 flex space-x-2">
+                    <button
+                        class="p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110">
+                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+                            </path>
+                        </svg>
+                    </button>
+                    <button
+                        class="p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110">
+                        <svg class="w-5 h-5 text-gray-700 hover:text-primary" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Room Title & Basic Info -->
+            <div class="border-b border-gray-200 pb-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ room.nomor_ruangan }}</h1>
+                        <div class="flex items-center text-gray-600 space-x-4">
+                            <span class="inline-flex items-center">
+                                {% if room.tipe_ruangan == 'Kelas' %}
+                                🏫
+                                {% elif room.tipe_ruangan == 'Lab' %}
+                                🔬
+                                {% else %}
+                                🎭
+                                {% endif %}
+                                {{ room.get_tipe_ruangan_display }}
+                            </span>
+                            <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
+                            <span class="inline-flex items-center">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                    </path>
+                                </svg>
+                                {{ room.kapasitas }} orang
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
+                        <svg class="w-5 h-5 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                            </path>
+                        </svg>
+                        <span class="font-semibold text-gray-900">4.9</span>
+                        <span class="text-gray-500 ml-1">(24 review)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facilities Section -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Fasilitas Ruangan</h2>
+                {% if room.fasilitas_list %}
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {% for fasilitas in room.fasilitas_list %}
+                    <div class="flex items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700 font-medium">{{ fasilitas }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500">Belum ada informasi fasilitas</p>
+                {% endif %}
+            </div>
+
+            <!-- Description Section -->
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Tentang Ruangan Ini</h2>
+                <div class="prose prose-gray max-w-none">
+                    {% if room.deskripsi %}
+                    <p class="text-gray-600 leading-relaxed whitespace-pre-line">{{ room.deskripsi }}</p>
+                    {% else %}
+                    <p class="text-gray-600 leading-relaxed">
+                        {{ room.nomor_ruangan }} adalah ruangan {{ room.get_tipe_ruangan_display|lower }} yang tersedia
+                        untuk kegiatan akademik dan non-akademik di lingkungan kampus.
+                        Ruangan ini memiliki kapasitas {{ room.kapasitas }} orang dengan berbagai fasilitas modern yang
+                        mendukung berbagai aktivitas.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed mt-4">
+                        {% if room.tipe_ruangan == 'Aula' %}
+                        Cocok untuk acara besar seperti seminar, wisuda, workshop, dan berbagai kegiatan yang
+                        membutuhkan ruang luas dengan kapasitas besar.
+                        {% elif room.tipe_ruangan == 'Lab' %}
+                        Ideal untuk praktikum, penelitian, workshop teknis, dan kegiatan yang membutuhkan peralatan
+                        komputer atau laboratorium.
+                        {% else %}
+                        Sempurna untuk diskusi kelompok, presentasi, kuliah tamu, dan kegiatan belajar mengajar
+                        interaktif.
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rules Section -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Peraturan Penggunaan</h2>
+
+                {% if room.peraturan_list or room.larangan_list %}
+                <!-- CMS Peraturan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Hal yang Diperbolehkan (Green Checkmark) -->
+                    {% for aturan in room.peraturan_list %}
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ aturan }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Hal yang Dilarang (Red X) -->
+                    {% for larangan in room.larangan_list %}
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ larangan }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- Default Peraturan (when both empty) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Jaga kebersihan</p>
+                            <p class="text-sm text-gray-500">Bersihkan ruangan setelah selesai</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Kembalikan peralatan</p>
+                            <p class="text-sm text-gray-500">Pastikan semua peralatan dikembalikan</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Dilarang merokok</p>
+                            <p class="text-sm text-gray-500">Area bebas asap rokok</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">Tidak melebihi kapasitas</p>
+                            <p class="text-sm text-gray-500">Maks. {{ room.kapasitas }} orang</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Calendar Section -->
+            <div class="border-t border-gray-200 pt-6 mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Jadwal Pemakaian Ruangan</h2>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="changeCalendarMonth(-1)"
+                            class="p-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="goToToday()"
+                            class="px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                            Hari ini
+                        </button>
+                        <button type="button" onclick="changeCalendarMonth(1)"
+                            class="p-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Month/Year Header -->
+                <div class="text-center mb-4">
+                    <h3 id="calendarMonthYear" class="text-lg font-bold text-primary"></h3>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <!-- Day Headers -->
+                    <div
+                        class="grid grid-cols-7 bg-gradient-to-r from-primary to-blue-400 text-white text-center text-sm font-medium">
+                        <div class="py-3">Sen</div>
+                        <div class="py-3">Sel</div>
+                        <div class="py-3">Rab</div>
+                        <div class="py-3">Kam</div>
+                        <div class="py-3">Jum</div>
+                        <div class="py-3 bg-white/10">Sab</div>
+                        <div class="py-3 bg-white/10">Min</div>
+                    </div>
+
+                    <!-- Calendar Body -->
+                    <div id="calendarBody" class="grid grid-cols-7 divide-x divide-y divide-gray-100">
+                        <!-- Days will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex items-center justify-center space-x-6 mt-4 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-primary/20 border border-primary rounded"></span>
+                        <span class="text-gray-600">Hari ini</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-gradient-to-r from-primary to-blue-400 rounded"></span>
+                        <span class="text-gray-600">Sudah dibooking</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-green-100 border border-green-400 rounded"></span>
+                        <span class="text-gray-600">Tersedia</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Right Column: Booking Card (Sticky) -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-24">
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-6">
+                    <!-- Price Header -->
+                    <div class="flex items-baseline justify-between mb-6 pb-4 border-b border-gray-200">
+                        <div>
+                            <span class="text-2xl font-bold text-gray-900">Gratis</span>
+                            <span class="text-gray-500"> / sesi</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                </path>
+                            </svg>
+                            <span>4.9</span>
+                        </div>
+                    </div>
+
+                    {% if room.is_active %}
+                    <!-- Booking Form -->
+                    <form method="POST" enctype="multipart/form-data" class="space-y-5" id="bookingForm">
+                        {% csrf_token %}
+
+                        <!-- Nama Lengkap -->
+                        <div>
+                            <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Lengkap
+                            </label>
+                            <input type="text" id="nama_lengkap" name="nama_lengkap"
+                                value="{% if form_data.nama_lengkap %}{{ form_data.nama_lengkap }}{% elif user.is_authenticated %}{{ user.get_full_name }}{% endif %}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                                placeholder="Masukkan nama lengkap" required>
+                        </div>
+
+                        <!-- Jumlah Tamu -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Jumlah Peserta
+                            </label>
+                            <div
+                                class="flex items-center justify-between bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                        </path>
+                                    </svg>
+                                    <span class="text-sm text-gray-600">Max {{ room.kapasitas }} orang</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <button type="button" onclick="decrementGuest()"
+                                        class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 hover:border-primary hover:text-primary flex items-center justify-center transition-colors shadow-sm">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M20 12H4"></path>
+                                        </svg>
+                                    </button>
+                                    <input type="number" id="jumlah_tamu" name="jumlah_tamu"
+                                        value="{% if form_data.jumlah_tamu %}{{ form_data.jumlah_tamu }}{% else %}1{% endif %}"
+                                        min="1" max="{{ room.kapasitas }}"
+                                        class="w-16 text-center text-xl font-semibold border-0 bg-transparent focus:ring-0"
+                                        readonly>
+                                    <button type="button" id="incrementGuestBtn"
+                                        data-max-capacity="{{ room.kapasitas }}"
+                                        class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 hover:border-primary hover:text-primary flex items-center justify-center transition-colors shadow-sm">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tanggal & Waktu Mulai -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <svg class="inline w-4 h-4 mr-1 text-primary" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Tanggal & Waktu Mulai
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="tanggal_mulai_date" placeholder="Pilih tanggal"
+                                    class="flatpickr-date w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors bg-white cursor-pointer"
+                                    readonly>
+                                <input type="text" id="tanggal_mulai_time" placeholder="Pilih waktu"
+                                    class="flatpickr-time w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors bg-white cursor-pointer"
+                                    readonly>
+                            </div>
+                            <input type="hidden" id="tanggal_mulai" name="tanggal_mulai">
+                        </div>
+
+                        <!-- Tanggal & Waktu Selesai -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <svg class="inline w-4 h-4 mr-1 text-primary" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Tanggal & Waktu Selesai
+                            </label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="tanggal_selesai_date" placeholder="Pilih tanggal"
+                                    class="flatpickr-date w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors bg-white cursor-pointer"
+                                    readonly>
+                                <input type="text" id="tanggal_selesai_time" placeholder="Pilih waktu"
+                                    class="flatpickr-time w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors bg-white cursor-pointer"
+                                    readonly>
+                            </div>
+                            <input type="hidden" id="tanggal_selesai" name="tanggal_selesai">
+                        </div>
+
+                        <!-- Keperluan -->
+                        <div>
+                            <label for="keperluan" class="block text-sm font-medium text-gray-700 mb-1">
+                                Keperluan
+                            </label>
+                            <textarea id="keperluan" name="keperluan" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-none"
+                                placeholder="Jelaskan keperluan peminjaman..."
+                                required>{% if form_data.keperluan %}{{ form_data.keperluan }}{% endif %}</textarea>
+                        </div>
+
+                        <!-- Document Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Dokumen Pendukung <span class="text-red-500">*</span>
+                            </label>
+                            <div id="dropZone"
+                                class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
+                                <input type="file" id="dokumen_pendukung" name="dokumen_pendukung"
+                                    accept=".pdf,.doc,.docx" class="hidden">
+                                <div id="uploadPlaceholder">
+                                    <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                        </path>
+                                    </svg>
+                                    <p class="text-sm text-gray-600 mb-1">Klik atau drag file ke sini</p>
+                                    <p class="text-xs text-gray-400">PDF, DOC, DOCX (max 5MB)</p>
+                                </div>
+                                <div id="uploadedFile" class="hidden">
+                                    <div class="flex items-center justify-center space-x-3">
+                                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                            </path>
+                                        </svg>
+                                        <span id="fileName" class="text-sm font-medium text-gray-700"></span>
+                                        <button type="button" onclick="removeFile()"
+                                            class="text-red-500 hover:text-red-700">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="button" id="submitBtn" onclick="validateAndSubmitForm()"
+                            class="w-full py-4 bg-gradient-to-r from-primary to-blue-400 text-white font-semibold rounded-xl 
+                                       shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 
+                                       hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            <span>Ajukan Peminjaman</span>
+                        </button>
+
+                        <p class="text-center text-sm text-gray-500">
+                            Anda tidak akan dikenakan biaya
+                        </p>
+                    </form>
+                    {% else %}
+                    <!-- Room Not Available -->
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Ruangan Tidak Tersedia</h3>
+                        <p class="text-sm text-gray-500 mb-4">Ruangan ini sedang tidak dapat dipinjam. Silakan coba
+                            ruangan lain.</p>
+                        <a href="{% url 'home' %}"
+                            class="inline-flex items-center text-primary font-medium hover:underline">
+                            Lihat ruangan lain
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Report Link -->
+                <div class="mt-4 text-center">
+                    <button class="text-sm text-gray-500 hover:text-gray-700 underline">
+                        Laporkan ruangan ini
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="fixed inset-0 z-50 hidden" style="background-color: rgba(0,0,0,0.5);">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-bounce-short">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Data Belum Lengkap</h3>
+                    <p class="text-gray-600 mb-4">Mohon lengkapi data berikut sebelum melanjutkan:</p>
+                    <ul class="text-left text-sm text-red-600 bg-red-50 p-4 rounded-lg mb-6 space-y-2" id="errorList">
+                        <!-- Errors injected here -->
+                    </ul>
+                    <button type="button" onclick="closeErrorModal()"
+                        class="w-full py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors">
+                        Saya Mengerti
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day View Modal - Shows hourly slots for a selected date -->
+    <div id="dayViewModal" class="fixed inset-0 z-50 hidden" style="background-color: rgba(0,0,0,0.5);">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900" id="dayViewTitle">Jadwal 14 Desember 2025</h3>
+                    <button type="button" onclick="closeDayViewModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex items-center gap-4 mb-4 text-sm">
+                    <div class="flex items-center gap-1">
+                        <div class="w-4 h-4 rounded bg-green-100 border border-green-400"></div>
+                        <span class="text-gray-600">Tersedia</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-4 h-4 rounded bg-gradient-to-r from-primary to-blue-400"></div>
+                        <span class="text-gray-600">Dibooking</span>
+                    </div>
+                </div>
+
+                <!-- Hourly Slots Grid -->
+                <div id="dayViewSlots" class="space-y-2">
+                    <!-- Slots will be generated by JavaScript -->
+                </div>
+
+                <!-- Close Button -->
+                <button type="button" onclick="closeDayViewModal()"
+                    class="w-full mt-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Flatpickr CSS & JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
+<style>
+    /* Custom Flatpickr Styles */
+    .flatpickr-calendar {
+        border-radius: 16px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        border: none !important;
+    }
+
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover {
+        background: linear-gradient(135deg, #60A5FA, #3B82F6) !important;
+        border-color: transparent !important;
+    }
+
+    .flatpickr-day:hover {
+        background: #DBEAFE !important;
+        border-color: transparent !important;
+    }
+
+    .flatpickr-time input {
+        font-size: 1.25rem !important;
+        font-weight: 600 !important;
+    }
+
+    .flatpickr-time .numInputWrapper:hover {
+        background: #DBEAFE !important;
+    }
+</style>
+
+<script>
+    // ============================================
+    // CSRF TOKEN HELPER
+    // ============================================
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Update CSRF token in form before submission
+    function refreshCSRFToken() {
+        const csrfToken = getCookie('csrftoken');
+        const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrfToken && csrfInput) {
+            csrfInput.value = csrfToken;
+            console.log('CSRF token refreshed');
+        }
+    }
+
+    // ============================================
+    // FORM VALIDATION AND SUBMIT (GLOBAL FUNCTION)
+    // ============================================
+    async function validateAndSubmitForm() {
+        console.log('validateAndSubmitForm called');
+
+        const form = document.getElementById('bookingForm');
+        if (!form) {
+            console.error('Form not found!');
+            return false;
+        }
+
+        // Refresh CSRF token
+        refreshCSRFToken();
+
+        // Update hidden datetime fields
+        if (typeof window.updateAllHiddenDateTimes === 'function') {
+            window.updateAllHiddenDateTimes();
+        }
+
+        const errors = [];
+
+        // Validate nama lengkap
+        const namaLengkap = document.getElementById('nama_lengkap');
+        if (!namaLengkap || !namaLengkap.value.trim()) {
+            errors.push('❌ Nama lengkap wajib diisi');
+        }
+
+        // Validate jumlah tamu
+        const jumlahTamu = document.getElementById('jumlah_tamu');
+        const jumlahTamuVal = jumlahTamu ? parseInt(jumlahTamu.value) : 0;
+        if (!jumlahTamuVal || jumlahTamuVal < 1) {
+            errors.push('❌ Jumlah peserta minimal 1 orang');
+        }
+
+        // Validate tanggal mulai
+        const startDateInput = document.getElementById('tanggal_mulai_date');
+        const startTimeInput = document.getElementById('tanggal_mulai_time');
+        const startHidden = document.getElementById('tanggal_mulai');
+
+        if (!startDateInput || !startDateInput.value) {
+            errors.push('❌ Tanggal mulai wajib dipilih');
+        }
+        if (!startTimeInput || !startTimeInput.value) {
+            errors.push('❌ Waktu mulai wajib dipilih');
+        }
+
+        // Validate tanggal selesai
+        const endDateInput = document.getElementById('tanggal_selesai_date');
+        const endTimeInput = document.getElementById('tanggal_selesai_time');
+        const endHidden = document.getElementById('tanggal_selesai');
+
+        if (!endDateInput || !endDateInput.value) {
+            errors.push('❌ Tanggal selesai wajib dipilih');
+        }
+        if (!endTimeInput || !endTimeInput.value) {
+            errors.push('❌ Waktu selesai wajib dipilih');
+        }
+
+        // Validate keperluan
+        const keperluan = document.getElementById('keperluan');
+        if (!keperluan || !keperluan.value.trim()) {
+            errors.push('❌ Keperluan peminjaman wajib diisi');
+        }
+
+        // Validate datetime logic
+        if (startHidden && endHidden && startHidden.value && endHidden.value) {
+            if (new Date(endHidden.value) <= new Date(startHidden.value)) {
+                errors.push('❌ Waktu selesai harus lebih besar dari waktu mulai');
+            }
+        }
+
+        // Validate documents - THIS IS THE KEY CHECK
+        const fileInput = document.getElementById('dokumen_pendukung');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            errors.push('❌ Dokumen pendukung wajib diupload');
+        } else {
+            const file = fileInput.files[0];
+            const allowedTypes = ['.pdf', '.doc', '.docx'];
+            const fileName = file.name.toLowerCase();
+            const hasValidExt = allowedTypes.some(ext => fileName.endsWith(ext));
+
+            if (!hasValidExt) {
+                errors.push('❌ Format dokumen harus PDF, DOC, atau DOCX');
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                errors.push('❌ Ukuran dokumen maksimal 5MB');
+            }
+        }
+
+        // Show errors if any - DO NOT SUBMIT
+        if (errors.length > 0) {
+            console.log('Validation errors found:', errors);
+            const errorList = document.getElementById('errorList');
+            if (errorList) {
+                errorList.innerHTML = errors.map(err => `<li>${err}</li>`).join('');
+            }
+            const errorModal = document.getElementById('errorModal');
+            if (errorModal) {
+                errorModal.classList.remove('hidden');
+            }
+            return false;
+        }
+
+        // Check for booking conflicts BEFORE submitting
+        console.log('Checking for booking conflicts...');
+        const startDateTime = document.getElementById('tanggal_mulai').value;
+        const endDateTime = document.getElementById('tanggal_selesai').value;
+
+        if (startDateTime && endDateTime) {
+            try {
+                const conflictResult = await checkBookingConflict(startDateTime, endDateTime);
+
+                if (conflictResult.has_conflict) {
+                    console.log('Conflict detected:', conflictResult);
+                    showConflictModal(conflictResult.message, conflictResult.conflict);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Conflict check error:', error);
+                // Continue with submission if conflict check fails
+            }
+        }
+
+        // If no errors and no conflicts, submit the form
+        console.log('Validation passed, no conflicts, submitting form...');
+        form.submit();
+        return true;
+    }
+
+    // ============================================
+    // GUEST COUNT FUNCTIONS
+    // ============================================
+    function incrementGuest(maxCapacity) {
+        const input = document.getElementById('jumlah_tamu');
+        let value = parseInt(input.value) || 1;
+        if (value < maxCapacity) {
+            input.value = value + 1;
+        }
+    }
+
+    function decrementGuest() {
+        const input = document.getElementById('jumlah_tamu');
+        let value = parseInt(input.value) || 1;
+        if (value > 1) {
+            input.value = value - 1;
+        }
+    }
+
+    // Setup event listeners for guest count buttons
+    document.addEventListener('DOMContentLoaded', function () {
+        const incrementBtn = document.getElementById('incrementGuestBtn');
+        if (incrementBtn) {
+            incrementBtn.addEventListener('click', function () {
+                const maxCapacity = parseInt(this.dataset.maxCapacity) || 100;
+                incrementGuest(maxCapacity);
+            });
+        }
+    });
+
+    // ============================================
+    // FILE UPLOAD FUNCTIONS
+    // ============================================
+    function removeFile() {
+        const fileInput = document.getElementById('dokumen_pendukung');
+        const placeholder = document.getElementById('uploadPlaceholder');
+        const uploaded = document.getElementById('uploadedFile');
+
+        fileInput.value = '';
+        placeholder.classList.remove('hidden');
+        uploaded.classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('dokumen_pendukung');
+        const placeholder = document.getElementById('uploadPlaceholder');
+        const uploaded = document.getElementById('uploadedFile');
+        const fileName = document.getElementById('fileName');
+
+        if (dropZone && fileInput) {
+            // Click to upload
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            // Drag & Drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-primary', 'bg-primary/5');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-primary', 'bg-primary/5');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-primary', 'bg-primary/5');
+
+                const files = e.dataTransfer.files;
+                if (files.length) {
+                    fileInput.files = files;
+                    showUploadedFile(files[0]);
+                }
+            });
+
+            // File input change
+            fileInput.addEventListener('change', function () {
+                if (this.files.length) {
+                    showUploadedFile(this.files[0]);
+                }
+            });
+
+            function showUploadedFile(file) {
+                fileName.textContent = file.name;
+                placeholder.classList.add('hidden');
+                uploaded.classList.remove('hidden');
+            }
+        }
+
+        // ============================================
+        // FLATPICKR DATE/TIME PICKERS
+        // ============================================
+        const today = new Date();
+
+        // Store booked slots for current selected date
+        let currentBookedSlots = [];
+
+        // Fetch booked slots for a specific date
+        async function fetchBookedSlots(dateStr) {
+            try {
+                const response = await fetch(`/api/booked-slots/${ROOM_ID}/${dateStr}/`);
+                const data = await response.json();
+                if (data.success) {
+                    currentBookedSlots = data.slots;
+                    console.log('Fetched booked slots:', currentBookedSlots);
+                    return data.slots;
+                }
+            } catch (error) {
+                console.error('Failed to fetch booked slots:', error);
+            }
+            return [];
+        }
+
+        // Check if a time slot is booked
+        function isTimeBooked(hours, minutes) {
+            const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            for (const slot of currentBookedSlots) {
+                if (timeStr >= slot.start_time && timeStr < slot.end_time) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // ROOM_ID is defined globally below (in CALENDAR FUNCTIONALITY section)
+
+        // Start Date Picker
+        const startDatePicker = flatpickr("#tanggal_mulai_date", {
+            locale: "id",
+            dateFormat: "d M Y",
+            minDate: "today",
+            disableMobile: true,
+            onChange: async function (selectedDates) {
+                if (selectedDates[0]) {
+                    endDatePicker.set('minDate', selectedDates[0]);
+
+                    // Fetch booked slots for this date
+                    const year = selectedDates[0].getFullYear();
+                    const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
+                    const day = String(selectedDates[0].getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+
+                    await fetchBookedSlots(dateStr);
+                    updateHiddenDateTime('mulai');
+                }
+            }
+        });
+
+        // Start Time Picker - restricted to 08:00-21:00
+        const startTimePicker = flatpickr("#tanggal_mulai_time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            minuteIncrement: 15,
+            minTime: "08:00",
+            maxTime: "21:00",
+            defaultHour: 8,
+            defaultMinute: 0,
+            disableMobile: true,
+            onChange: function () {
+                updateHiddenDateTime('mulai');
+            }
+        });
+
+        // End Date Picker
+        const endDatePicker = flatpickr("#tanggal_selesai_date", {
+            locale: "id",
+            dateFormat: "d M Y",
+            minDate: "today",
+            disableMobile: true,
+            onChange: async function (selectedDates) {
+                if (selectedDates[0]) {
+                    // Fetch booked slots for this date
+                    const year = selectedDates[0].getFullYear();
+                    const month = String(selectedDates[0].getMonth() + 1).padStart(2, '0');
+                    const day = String(selectedDates[0].getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+
+                    await fetchBookedSlots(dateStr);
+                }
+                updateHiddenDateTime('selesai');
+            }
+        });
+
+        // End Time Picker - restricted to 08:00-21:00
+        const endTimePicker = flatpickr("#tanggal_selesai_time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            minuteIncrement: 15,
+            minTime: "08:00",
+            maxTime: "21:00",
+            defaultHour: 9,
+            defaultMinute: 0,
+            disableMobile: true,
+            onChange: function () {
+                updateHiddenDateTime('selesai');
+            }
+        });
+
+        // Update hidden datetime fields - parse from input values directly
+        // Made global so validateAndSubmitForm can access it
+        window.updateHiddenDateTime = function (type) {
+            const dateEl = document.getElementById(`tanggal_${type}_date`);
+            const timeEl = document.getElementById(`tanggal_${type}_time`);
+            const hiddenEl = document.getElementById(`tanggal_${type}`);
+
+            if (!dateEl || !timeEl || !hiddenEl) return;
+
+            const dateValue = dateEl.value; // Format: "12 Dec 2025"
+            const timeValue = timeEl.value; // Format: "14:00"
+
+            console.log(`${type} - date:`, dateValue, 'time:', timeValue);
+
+            if (dateValue && timeValue) {
+                // Parse date from Flatpickr - get from selected dates
+                const fpDate = dateEl._flatpickr && dateEl._flatpickr.selectedDates[0];
+
+                if (fpDate) {
+                    // Parse time from input value (HH:MM format)
+                    const timeParts = timeValue.split(':');
+                    const hours = timeParts[0].padStart(2, '0');
+                    const minutes = timeParts[1].padStart(2, '0');
+
+                    // Format date
+                    const year = fpDate.getFullYear();
+                    const month = String(fpDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(fpDate.getDate()).padStart(2, '0');
+
+                    hiddenEl.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    console.log(`Set ${type} to:`, hiddenEl.value);
+                }
+            }
+        };
+
+        // Force update all hidden fields before form submission
+        // Made global so validateAndSubmitForm can access it
+        window.updateAllHiddenDateTimes = function () {
+            window.updateHiddenDateTime('mulai');
+            window.updateHiddenDateTime('selesai');
+        };
+
+        // Get current booked slots (for use in validation)
+        window.getCurrentBookedSlots = function () {
+            return currentBookedSlots;
+        };
+
+        // Restore form data from server (if validation failed)
+        {% if form_data.tanggal_mulai %}
+        (function () {
+            try {
+                const savedStartDateTime = "{{ form_data.tanggal_mulai|escapejs }}";
+                const savedEndDateTime = "{{ form_data.tanggal_selesai|escapejs }}";
+
+                if (savedStartDateTime) {
+                    const startDT = new Date(savedStartDateTime);
+                    startDatePicker.setDate(startDT, false);
+                    startTimePicker.setDate(startDT, false);
+                    document.getElementById('tanggal_mulai').value = savedStartDateTime;
+                }
+
+                if (savedEndDateTime) {
+                    const endDT = new Date(savedEndDateTime);
+                    endDatePicker.setDate(endDT, false);
+                    endTimePicker.setDate(endDT, false);
+                    document.getElementById('tanggal_selesai').value = savedEndDateTime;
+                }
+            } catch (e) {
+                console.error('Error restoring form data:', e);
+            }
+        })();
+        {% endif %}
+
+        // Note: Form validation is now handled by validateAndSubmitForm() function
+        // which is called via onclick on the submit button (type="button")
+    });
+
+    function closeErrorModal() {
+        document.getElementById('errorModal').classList.add('hidden');
+    }
+
+    // ============================================
+    // CALENDAR FUNCTIONALITY
+    // ============================================
+    const ROOM_ID = parseInt(document.querySelector('[data-room-id]')?.dataset.roomId || '0');
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth() + 1; // 1-indexed
+    let calendarBookings = [];
+
+    const monthNames = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    function changeCalendarMonth(delta) {
+        currentMonth += delta;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+        } else if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear--;
+        }
+        renderCalendar();
+    }
+
+    function goToToday() {
+        const now = new Date();
+        currentYear = now.getFullYear();
+        currentMonth = now.getMonth() + 1;
+        renderCalendar();
+    }
+
+    async function fetchCalendarBookings() {
+        try {
+            const response = await fetch(`/api/calendar/${ROOM_ID}/?year=${currentYear}&month=${currentMonth}`);
+            const data = await response.json();
+            if (data.success) {
+                calendarBookings = data.bookings;
+            }
+        } catch (error) {
+            console.error('Failed to fetch calendar bookings:', error);
+        }
+    }
+
+    function getBookingsForDate(dateStr) {
+        return calendarBookings.filter(b => b.date === dateStr);
+    }
+
+    async function renderCalendar() {
+        await fetchCalendarBookings();
+
+        // Update header
+        document.getElementById('calendarMonthYear').textContent =
+            `${monthNames[currentMonth - 1]} ${currentYear}`;
+
+        const calendarBody = document.getElementById('calendarBody');
+        calendarBody.innerHTML = '';
+
+        // Get first day of month and number of days
+        const firstDay = new Date(currentYear, currentMonth - 1, 1);
+        const lastDay = new Date(currentYear, currentMonth, 0);
+        const daysInMonth = lastDay.getDate();
+
+        // Get day of week for first day (0 = Sunday, adjust to Monday = 0)
+        let startDay = firstDay.getDay() - 1;
+        if (startDay < 0) startDay = 6;
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        // Create calendar cells
+        // Previous month days
+        const prevMonth = new Date(currentYear, currentMonth - 2, 1);
+        const daysInPrevMonth = new Date(currentYear, currentMonth - 1, 0).getDate();
+
+        for (let i = 0; i < startDay; i++) {
+            const day = daysInPrevMonth - startDay + i + 1;
+            calendarBody.innerHTML += createDayCell(day, true, false, []);
+        }
+
+        // Current month days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isToday = dateStr === todayStr;
+            const dayBookings = getBookingsForDate(dateStr);
+            calendarBody.innerHTML += createDayCell(day, false, isToday, dayBookings);
+        }
+
+        // Next month days
+        const totalCells = startDay + daysInMonth;
+        const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
+        for (let i = 1; i <= remainingCells; i++) {
+            calendarBody.innerHTML += createDayCell(i, true, false, []);
+        }
+    }
+
+    function createDayCell(day, isOtherMonth, isToday, bookings) {
+        const bgClass = isToday ? 'bg-primary/10 border-2 border-primary' : (isOtherMonth ? 'bg-gray-50' : 'bg-white');
+        const textClass = isOtherMonth ? 'text-gray-300' : (isToday ? 'text-primary font-bold' : 'text-gray-700');
+
+        // Create date string for this cell
+        const dateStr = isOtherMonth ? '' : `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const clickHandler = isOtherMonth ? '' : `onclick="openDayView('${dateStr}', ${JSON.stringify(bookings).replace(/"/g, '&quot;')})"`;
+
+        let bookingHtml = '';
+        if (bookings.length > 0 && !isOtherMonth) {
+            // Calculate aggregated time range from all bookings
+            const allStartTimes = bookings.map(b => b.start_time);
+            const allEndTimes = bookings.map(b => b.end_time);
+            const minStart = allStartTimes.sort()[0];
+            const maxEnd = allEndTimes.sort().reverse()[0];
+            const aggregatedRange = `${minStart}-${maxEnd}`;
+
+            // Show aggregated time range badge
+            bookingHtml += `
+                <div class="mt-1 px-1.5 py-0.5 text-xs rounded bg-gradient-to-r from-primary to-blue-400 text-white truncate">
+                    <span class="font-medium">${aggregatedRange}</span>
+                </div>
+            `;
+
+            // Show booking count if more than 1
+            if (bookings.length > 1) {
+                bookingHtml += `<div class="mt-0.5 text-xs text-gray-500">${bookings.length} booking</div>`;
+            }
+        }
+
+        const cursorClass = isOtherMonth ? '' : 'cursor-pointer';
+
+        return `
+            <div class="min-h-[80px] p-1.5 ${bgClass} hover:bg-gray-100 transition-colors ${cursorClass}" ${clickHandler}>
+                <div class="${textClass} text-sm mb-1">${day}</div>
+                ${bookingHtml}
+            </div>
+        `;
+    }
+
+    // ============================================
+    // DAY VIEW MODAL FUNCTIONS
+    // ============================================
+    const monthNamesIndo = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    function openDayView(dateStr, bookings) {
+        // Parse date string
+        const [year, month, day] = dateStr.split('-').map(Number);
+
+        // Update title
+        const titleEl = document.getElementById('dayViewTitle');
+        titleEl.textContent = `Jadwal ${day} ${monthNamesIndo[month - 1]} ${year}`;
+
+        // Generate hourly slots (08:00 - 21:00)
+        const slotsContainer = document.getElementById('dayViewSlots');
+        slotsContainer.innerHTML = generateHourlySlots(bookings);
+
+        // Show modal
+        document.getElementById('dayViewModal').classList.remove('hidden');
+    }
+
+    function closeDayViewModal() {
+        document.getElementById('dayViewModal').classList.add('hidden');
+    }
+
+    function generateHourlySlots(bookings) {
+        // Google Calendar style: timeline with hour labels on left and booking blocks overlaid
+        const HOUR_HEIGHT = 48; // Height per hour in pixels
+        const START_HOUR = 8;
+        const END_HOUR = 21;
+        const TOTAL_HOURS = END_HOUR - START_HOUR;
+
+        // Create timeline container with hour labels and booking blocks
+        let html = `<div class="relative" style="height: ${TOTAL_HOURS * HOUR_HEIGHT}px;">`;
+
+        // Hour grid lines and labels
+        for (let hour = START_HOUR; hour <= END_HOUR; hour++) {
+            const top = (hour - START_HOUR) * HOUR_HEIGHT;
+            const timeLabel = `${String(hour).padStart(2, '0')}:00`;
+            const isLast = hour === END_HOUR;
+
+            html += `
+                <div class="absolute w-full flex items-start" style="top: ${top}px; height: ${isLast ? '1px' : HOUR_HEIGHT + 'px'};">
+                    <div class="w-14 text-xs text-gray-500 font-medium pr-2 text-right -mt-2">${timeLabel}</div>
+                    <div class="flex-1 border-t border-gray-200 ${isLast ? '' : 'h-full'}"></div>
+                </div>
+            `;
+        }
+
+        // Booking blocks - positioned absolutely based on start/end time
+        for (const booking of bookings) {
+            const startParts = booking.start_time.split(':').map(Number);
+            const endParts = booking.end_time.split(':').map(Number);
+
+            const startHour = startParts[0] + startParts[1] / 60;
+            const endHour = endParts[0] + endParts[1] / 60;
+
+            // Clamp to visible range
+            const visibleStart = Math.max(startHour, START_HOUR);
+            const visibleEnd = Math.min(endHour, END_HOUR);
+
+            if (visibleEnd <= visibleStart) continue; // Out of range
+
+            const topPos = (visibleStart - START_HOUR) * HOUR_HEIGHT;
+            const height = (visibleEnd - visibleStart) * HOUR_HEIGHT;
+
+            html += `
+                <div class="absolute left-14 right-0 bg-gradient-to-r from-primary to-blue-400 rounded-lg shadow-md overflow-hidden"
+                     style="top: ${topPos}px; height: ${height}px; min-height: 24px;">
+                    <div class="p-2 text-white h-full flex flex-col">
+                        <div class="text-xs font-semibold">${booking.start_time} - ${booking.end_time}</div>
+                        <div class="text-xs opacity-90 truncate mt-0.5">${booking.title || 'Reserved'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        html += '</div>';
+
+        // Add summary of available slots below
+        let availableSlots = [];
+        for (let hour = START_HOUR; hour < END_HOUR; hour++) {
+            const timeStr = `${String(hour).padStart(2, '0')}:00`;
+            const nextTimeStr = `${String(hour + 1).padStart(2, '0')}:00`;
+            let isBooked = false;
+
+            for (const booking of bookings) {
+                if (timeStr < booking.end_time && nextTimeStr > booking.start_time) {
+                    isBooked = true;
+                    break;
+                }
+            }
+
+            if (!isBooked) {
+                availableSlots.push(timeStr);
+            }
+        }
+
+        if (availableSlots.length > 0) {
+            html += `
+                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl">
+                    <div class="text-sm font-medium text-green-700 mb-1">
+                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        Jam Tersedia
+                    </div>
+                    <div class="text-xs text-green-600 flex flex-wrap gap-1">
+                        ${availableSlots.map(t => `<span class="px-2 py-0.5 bg-green-100 rounded-full">${t}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        return html;
+    }
+
+    // ============================================
+    // BOOKING CONFLICT DETECTION
+    // ============================================
+    async function checkBookingConflict(startTime, endTime) {
+        try {
+            const response = await fetch('/api/bookings/check-conflict/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    room_id: ROOM_ID,
+                    start_time: startTime,
+                    end_time: endTime
+                })
+            });
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Conflict check failed:', error);
+            return { success: false, has_conflict: false };
+        }
+    }
+
+    // Add conflict check to form submission
+    const originalFormSubmit = document.getElementById('bookingForm');
+    if (originalFormSubmit) {
+        originalFormSubmit.addEventListener('submit', async function (e) {
+            const startDateTime = document.getElementById('tanggal_mulai').value;
+            const endDateTime = document.getElementById('tanggal_selesai').value;
+
+            if (startDateTime && endDateTime) {
+                e.preventDefault();
+
+                const conflictResult = await checkBookingConflict(startDateTime, endDateTime);
+
+                if (conflictResult.has_conflict) {
+                    showConflictModal(conflictResult.message, conflictResult.conflict);
+                    return false;
+                }
+
+                // No conflict, submit the form
+                this.submit();
+            }
+        });
+    }
+
+    function showConflictModal(message, conflict) {
+        // Create conflict modal if not exists
+        let modal = document.getElementById('conflictModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'conflictModal';
+            modal.className = 'fixed inset-0 z-50 hidden';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.innerHTML = `
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-bounce-short">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Jam Sudah Dibooking!</h3>
+                            <p id="conflictMessage" class="text-gray-600 mb-4"></p>
+                            <div id="conflictDetails" class="bg-orange-50 p-4 rounded-lg mb-6 text-left">
+                            </div>
+                            <button type="button" onclick="closeConflictModal()"
+                                class="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors">
+                                Pilih Jam Lain
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        document.getElementById('conflictMessage').textContent = message;
+
+        if (conflict) {
+            document.getElementById('conflictDetails').innerHTML = `
+                <p class="text-sm text-orange-800"><strong>Kegiatan:</strong> ${conflict.title}</p>
+                <p class="text-sm text-orange-800"><strong>Waktu:</strong> ${conflict.start_time} - ${conflict.end_time}</p>
+                <p class="text-sm text-orange-800"><strong>Tanggal:</strong> ${conflict.date}</p>
+            `;
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeConflictModal() {
+        document.getElementById('conflictModal').classList.add('hidden');
+    }
+
+    // Initialize calendar on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        renderCalendar();
+    });
+</script>
+{% endblock %}

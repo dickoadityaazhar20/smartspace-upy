@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Wishlist - SmartSpace UPY{% endblock %}
+
+{% block content %}
+<!-- Client-side auth verification -->
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const response = await fetch('/api/check-auth/');
+            const data = await response.json();
+            if (!data.authenticated) {
+                window.location.href = '/?login=required';
+                return;
+            }
+        } catch (error) {
+            window.location.href = '/?login=required';
+        }
+    });
+</script>
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Wishlist Saya</h1>
+        <p class="text-gray-600 mt-2">Ruangan yang Anda simpan ({{ wishlists.count }} ruangan)</p>
+    </div>
+
+    {% if wishlists %}
+    <!-- Wishlist Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in wishlists %}
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden group" data-wishlist-id="{{ item.id }}"
+            data-room-id="{{ item.room.id }}">
+            <!-- Room Image -->
+            <div class="aspect-video relative overflow-hidden">
+                {% if item.room.foto_ruangan %}
+                <img src="{{ item.room.foto_ruangan.url }}" alt="{{ item.room.nomor_ruangan }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop"
+                    alt="{{ item.room.nomor_ruangan }}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                {% endif %}
+
+                <!-- Remove Button -->
+                <button onclick="removeFromWishlist({{ item.room.id }}, this)"
+                    class="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors">
+                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Room Info -->
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-gray-900">{{ item.room.nomor_ruangan }}</h3>
+                <p class="text-sm text-gray-500 mb-2">{{ item.room.get_tipe_ruangan_display }}</p>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                        {{ item.room.kapasitas }} orang
+                    </span>
+                    <a href="{% url 'room_detail' item.room.pk %}"
+                        class="px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-lg hover:bg-primary hover:text-white transition-colors">
+                        Lihat Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+        <div class="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                </path>
+            </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Wishlist Kosong</h3>
+        <p class="text-gray-500 mb-6">Anda belum menambahkan ruangan ke wishlist.</p>
+        <a href="{% url 'home' %}"
+            class="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors">
+            Jelajahi Ruangan
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function removeFromWishlist(roomId, btn) {
+        try {
+            const response = await fetch('/api/wishlist/toggle/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_id: roomId })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.action === 'removed') {
+                // Remove card from DOM
+                const card = btn.closest('[data-room-id]');
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => card.remove(), 300);
+
+                showToast('success', data.message);
+
+                // Update wishlist count in dropdown if exists
+                const badge = document.querySelector('[data-wishlist-count]');
+                if (badge) {
+                    badge.textContent = data.wishlist_count;
+                }
+            }
+        } catch (error) {
+            showToast('error', 'Gagal menghapus dari wishlist');
+        }
+    }
+</script>
+{% endblock %}

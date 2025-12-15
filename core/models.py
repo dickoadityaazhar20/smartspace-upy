@@ -1,0 +1,400 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
+class User(AbstractUser):
+    """Custom User model extending AbstractUser"""
+    
+    class Role(models.TextChoices):
+        MAHASISWA = 'Mahasiswa', 'Mahasiswa'
+        DOSEN = 'Dosen', 'Dosen'
+        STAFF = 'Staff', 'Staff'
+        ADMIN = 'Admin', 'Admin'
+    
+    class Fakultas(models.TextChoices):
+        FKIP = 'FKIP', 'Fakultas Keguruan dan Ilmu Pendidikan'
+        FEB = 'FEB', 'Fakultas Ekonomi dan Bisnis'
+        FT = 'FT', 'Fakultas Teknik'
+        FIKES = 'FIKES', 'Fakultas Ilmu Kesehatan'
+        FISIP = 'FISIP', 'Fakultas Ilmu Sosial dan Ilmu Politik'
+        FAI = 'FAI', 'Fakultas Agama Islam'
+        FPSI = 'FPSI', 'Fakultas Psikologi'
+    
+    npm_nip = models.CharField(max_length=50, unique=True, blank=True, null=True, verbose_name='NPM/NIP')
+    fakultas = models.CharField(
+        max_length=20,
+        choices=Fakultas.choices,
+        blank=True,
+        null=True,
+        verbose_name='Fakultas'
+    )
+    program_studi = models.CharField(max_length=100, blank=True, null=True, verbose_name='Program Studi')
+    angkatan = models.CharField(max_length=20, blank=True, null=True, verbose_name='Angkatan')
+    nomor_hp = models.CharField(max_length=20, blank=True, null=True, verbose_name='Nomor HP/WhatsApp')
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.MAHASISWA,
+        verbose_name='Role'
+    )
+    
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+    
+    def __str__(self):
+        return f"{self.username} ({self.get_role_display()})"
+
+
+class Room(models.Model):
+    """Model untuk Ruangan"""
+    
+    class TipeRuangan(models.TextChoices):
+        KELAS = 'Kelas', 'Kelas'
+        LAB = 'Lab', 'Lab'
+        AULA = 'Aula', 'Aula'
+    
+    nomor_ruangan = models.CharField(max_length=50, unique=True, verbose_name='Nama Ruangan')
+    tipe_ruangan = models.CharField(
+        max_length=20,
+        choices=TipeRuangan.choices,
+        default=TipeRuangan.KELAS,
+        verbose_name='Tipe Ruangan'
+    )
+    kapasitas = models.PositiveIntegerField(default=0, verbose_name='Kapasitas')
+    fasilitas = models.TextField(
+        blank=True, 
+        verbose_name='Fasilitas',
+        help_text='Daftar fasilitas ruangan (satu fasilitas per baris, tekan Enter untuk menambah)'
+    )
+    foto_ruangan = models.ImageField(upload_to='ruangan/', blank=True, null=True, verbose_name='Foto Ruangan')
+    is_active = models.BooleanField(default=True, verbose_name='Aktif')
+    
+    # CMS Fields
+    deskripsi = models.TextField(
+        blank=True, 
+        verbose_name='Deskripsi Ruangan',
+        help_text='Deskripsi lengkap tentang ruangan ini'
+    )
+    peraturan = models.TextField(
+        blank=True, 
+        verbose_name='Hal yang Diperbolehkan ✅',
+        help_text='Hal-hal yang BOLEH dilakukan di ruangan ini (pisahkan dengan baris baru)'
+    )
+    larangan = models.TextField(
+        blank=True, 
+        verbose_name='Hal yang Dilarang ❌',
+        help_text='Hal-hal yang TIDAK BOLEH dilakukan di ruangan ini (pisahkan dengan baris baru)'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Ruangan'
+        verbose_name_plural = 'Ruangan'
+        ordering = ['nomor_ruangan']
+    
+    def __str__(self):
+        return f"{self.nomor_ruangan} - {self.get_tipe_ruangan_display()}"
+    
+    @property
+    def fasilitas_list(self):
+        """Return fasilitas as a list, splitting by newlines"""
+        if self.fasilitas:
+            return [f.strip() for f in self.fasilitas.split('\n') if f.strip()]
+        return []
+    
+    @property
+    def peraturan_list(self):
+        """Return peraturan (allowed rules) as a list, splitting by newlines"""
+        if self.peraturan:
+            return [p.strip() for p in self.peraturan.split('\n') if p.strip()]
+        return []
+    
+    @property
+    def larangan_list(self):
+        """Return larangan (prohibited rules) as a list, splitting by newlines"""
+        if self.larangan:
+            return [l.strip() for l in self.larangan.split('\n') if l.strip()]
+        return []
+
+
+class Booking(models.Model):
+    """Model untuk Peminjaman Ruangan"""
+    
+    class Status(models.TextChoices):
+        PENDING = 'Pending', 'Pending'
+        APPROVED = 'Approved', 'Approved'
+        REJECTED = 'Rejected', 'Rejected'
+        ON_PROCESS = 'On Process', 'On Process'
+        CANCELLED = 'Cancelled', 'Dibatalkan'
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bookings',
+        verbose_name='User'
+    )
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name='bookings',
+        verbose_name='Ruangan'
+    )
+    tanggal_mulai = models.DateTimeField(verbose_name='Tanggal Mulai')
+    tanggal_selesai = models.DateTimeField(verbose_name='Tanggal Selesai')
+    jumlah_tamu = models.PositiveIntegerField(
+        default=1,
+        verbose_name='Jumlah Tamu',
+        help_text='Jumlah peserta/tamu yang akan hadir'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        verbose_name='Status'
+    )
+    keperluan = models.TextField(blank=True, verbose_name='Keperluan')
+    dokumen_pendukung = models.FileField(
+        upload_to='dokumen_booking/',
+        blank=True,
+        null=True,
+        verbose_name='Dokumen Pendukung',
+        help_text='Upload dokumen pendukung (PDF, DOC, DOCX)'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Peminjaman'
+        verbose_name_plural = 'Peminjaman'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Booking {self.room.nomor_ruangan} by {self.user.username} - {self.get_status_display()}"
+    
+    @classmethod
+    def check_conflict(cls, room, start_time, end_time, exclude_booking_id=None):
+        """
+        Check if proposed booking conflicts with existing approved OR pending bookings.
+        Returns conflicting booking if found, None otherwise.
+        """
+        from django.db.models import Q
+        
+        # Check for conflicts with APPROVED or PENDING bookings
+        conflicts = cls.objects.filter(
+            room=room,
+            tanggal_mulai__lt=end_time,
+            tanggal_selesai__gt=start_time
+        ).filter(
+            Q(status=cls.Status.APPROVED) | Q(status=cls.Status.PENDING)
+        )
+        if exclude_booking_id:
+            conflicts = conflicts.exclude(pk=exclude_booking_id)
+        return conflicts.first()
+    
+    @classmethod
+    def get_approved_bookings_for_room(cls, room, year, month):
+        """
+        Get all approved bookings for a room in a specific month.
+        Returns QuerySet of bookings.
+        """
+        from django.db.models import Q
+        from django.utils import timezone
+        from datetime import datetime
+        import calendar
+        
+        # Get first and last day of month with proper timezone
+        first_day_naive = datetime(year, month, 1, 0, 0, 0)
+        last_day_naive = datetime(year, month, calendar.monthrange(year, month)[1], 23, 59, 59)
+        
+        # Make timezone aware using the configured timezone (Asia/Jakarta)
+        first_day = timezone.make_aware(first_day_naive)
+        last_day = timezone.make_aware(last_day_naive)
+        
+        return cls.objects.filter(
+            room=room,
+            status=cls.Status.APPROVED,
+        ).filter(
+            Q(tanggal_mulai__range=(first_day, last_day)) |
+            Q(tanggal_selesai__range=(first_day, last_day)) |
+            Q(tanggal_mulai__lt=first_day, tanggal_selesai__gt=last_day)
+        ).order_by('tanggal_mulai')
+
+
+class Wishlist(models.Model):
+    """Model untuk Wishlist/Favorit Ruangan"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='wishlists',
+        verbose_name='User'
+    )
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name='wishlists',
+        verbose_name='Ruangan'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Wishlist'
+        verbose_name_plural = 'Wishlists'
+        unique_together = ['user', 'room']  # Prevent duplicates
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.room.nomor_ruangan}"
+
+
+class Message(models.Model):
+    """Model untuk Pesan dua arah antara User dan Admin"""
+    
+    class MessageType(models.TextChoices):
+        USER_TO_ADMIN = 'user_to_admin', 'User ke Admin'
+        ADMIN_TO_USER = 'admin_to_user', 'Admin ke User'
+    
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='sent_messages',
+        verbose_name='Pengirim'
+    )
+    receiver = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='received_messages',
+        verbose_name='Penerima'
+    )
+    subject = models.CharField(
+        max_length=200, 
+        blank=True,
+        default='',
+        verbose_name='Subjek'
+    )
+    content = models.TextField(verbose_name='Isi Pesan')
+    message_type = models.CharField(
+        max_length=20,
+        choices=MessageType.choices,
+        default=MessageType.ADMIN_TO_USER,
+        verbose_name='Tipe Pesan'
+    )
+    attachment = models.FileField(
+        upload_to='message_attachments/',
+        blank=True,
+        null=True,
+        verbose_name='Lampiran',
+        help_text='File lampiran (gambar, dokumen, dll)'
+    )
+    is_read = models.BooleanField(default=False, verbose_name='Sudah Dibaca')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Pesan'
+        verbose_name_plural = 'Pesan'
+        ordering = ['created_at']  # Oldest first for chat display
+    
+    def __str__(self):
+        return f"Dari {self.sender.username} ke {self.receiver.username}: {self.content[:30]}"
+    
+    @property
+    def is_image(self):
+        """Check if attachment is an image"""
+        if self.attachment:
+            ext = self.attachment.name.lower().split('.')[-1]
+            return ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']
+        return False
+    
+    @property
+    def attachment_filename(self):
+        """Get just the filename from attachment"""
+        if self.attachment:
+            return self.attachment.name.split('/')[-1]
+        return None
+
+
+class PinnedConversation(models.Model):
+    """Model untuk menyimpan percakapan yang di-pin oleh admin"""
+    
+    admin = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='pinned_conversations',
+        verbose_name='Admin'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='pinned_by',
+        verbose_name='User'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Pinned Conversation'
+        verbose_name_plural = 'Pinned Conversations'
+        unique_together = ('admin', 'user')
+    
+    def __str__(self):
+        return f"{self.admin.username} pinned {self.user.username}"
+
+
+class Testimonial(models.Model):
+    """Model untuk Testimoni yang tampil di Homepage"""
+    
+    nama = models.CharField(max_length=100, verbose_name='Nama')
+    role = models.CharField(
+        max_length=100, 
+        verbose_name='Jabatan/Role',
+        help_text='Contoh: Mahasiswa Teknik Informatika, Dosen FKIP, Staff Akademik'
+    )
+    foto = models.ImageField(
+        upload_to='testimonials/', 
+        blank=True, 
+        null=True, 
+        verbose_name='Foto',
+        help_text='Foto profil (opsional, ukuran rekomendasi: 100x100px)'
+    )
+    content = models.TextField(
+        verbose_name='Isi Testimoni',
+        help_text='Testimoni tentang pengalaman menggunakan SmartSpace UPY'
+    )
+    rating = models.PositiveIntegerField(
+        default=5,
+        verbose_name='Rating',
+        help_text='Rating 1-5 bintang'
+    )
+    is_active = models.BooleanField(
+        default=True, 
+        verbose_name='Aktif',
+        help_text='Centang untuk menampilkan di homepage'
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Urutan',
+        help_text='Urutan tampil (angka kecil tampil duluan)'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Testimoni'
+        verbose_name_plural = 'Testimoni'
+        ordering = ['order', '-created_at']
+    
+    def __str__(self):
+        return f"{self.nama} - {self.role}"
+    
+    def save(self, *args, **kwargs):
+        # Ensure rating is between 1 and 5
+        if self.rating < 1:
+            self.rating = 1
+        elif self.rating > 5:
+            self.rating = 5
+        super().save(*args, **kwargs)

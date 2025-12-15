@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Semua Ruangan - SmartSpace UPY{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="mb-8">
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-2 text-sm text-gray-500">
+                <li><a href="{% url 'home' %}" class="hover:text-primary">Beranda</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-gray-900 font-medium">Semua Ruangan</li>
+            </ol>
+        </nav>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Semua Ruangan</h1>
+        <p class="text-gray-600 mt-2">Temukan ruangan yang sesuai dengan kebutuhanmu</p>
+    </div>
+
+    <!-- Filter Tags -->
+    <div id="filterButtons" class="flex flex-wrap gap-3 mb-8">
+        <button data-filter="all"
+            class="filter-btn active px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full text-sm font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-300">
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                Semua
+            </span>
+        </button>
+        <button data-filter="kelas"
+            class="filter-btn px-5 py-2.5 bg-white border-2 border-gray-200 text-gray-600 rounded-full text-sm font-semibold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-300">
+            <span class="flex items-center gap-2">
+                <span class="text-base">🏫</span>
+                Kelas
+            </span>
+        </button>
+        <button data-filter="lab"
+            class="filter-btn px-5 py-2.5 bg-white border-2 border-gray-200 text-gray-600 rounded-full text-sm font-semibold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-300">
+            <span class="flex items-center gap-2">
+                <span class="text-base">🔬</span>
+                Laboratorium
+            </span>
+        </button>
+        <button data-filter="aula"
+            class="filter-btn px-5 py-2.5 bg-white border-2 border-gray-200 text-gray-600 rounded-full text-sm font-semibold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all duration-300">
+            <span class="flex items-center gap-2">
+                <span class="text-base">🎭</span>
+                Aula
+            </span>
+        </button>
+    </div>
+
+    <!-- Room Count -->
+    <p id="roomCount" class="text-gray-600 mb-6">Menampilkan {{ rooms|length }} ruangan</p>
+
+    <!-- Room Grid -->
+    {% if rooms %}
+    <div id="roomGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for room in rooms %}
+        <div data-room-id="{{ room.pk }}" data-room-name="{{ room.nomor_ruangan|escapejs }}"
+            data-room-type="{{ room.tipe_ruangan|lower }}"
+            class="room-card bg-white rounded-2xl overflow-hidden cursor-pointer group block transform transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 border border-gray-100 hover:border-primary/30">
+            <!-- Room Image -->
+            <div class="aspect-square relative overflow-hidden"
+                onclick="window.location.href='{% url 'room_detail' room.pk %}'">
+                {% if room.foto_ruangan %}
+                <img src="{{ room.foto_ruangan.url }}" alt="{{ room.nomor_ruangan }}"
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out">
+                {% else %}
+                {% if room.tipe_ruangan == 'Aula' %}
+                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=400&fit=crop"
+                    alt="{{ room.nomor_ruangan }}"
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out">
+                {% elif room.tipe_ruangan == 'Lab' %}
+                <img src="https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=400&h=400&fit=crop"
+                    alt="{{ room.nomor_ruangan }}"
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400&h=400&fit=crop"
+                    alt="{{ room.nomor_ruangan }}"
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out">
+                {% endif %}
+                {% endif %}
+
+                <!-- Status Badge -->
+                {% if room.is_active %}
+                <div
+                    class="absolute top-3 left-3 px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-full flex items-center">
+                    <span class="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse"></span>
+                    Tersedia
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Room Info -->
+            <div class="p-4" onclick="window.location.href='{% url 'room_detail' room.pk %}'">
+                <div class="flex items-start justify-between mb-2">
+                    <h3 class="text-base font-semibold text-gray-900 line-clamp-1">{{ room.nomor_ruangan }}</h3>
+                    <div class="flex items-center text-sm ml-2 shrink-0">
+                        <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                            </path>
+                        </svg>
+                        <span class="text-gray-700">4.9</span>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-1">
+                    <span class="inline-flex items-center">
+                        {% if room.tipe_ruangan == 'Kelas' %}🏫
+                        {% elif room.tipe_ruangan == 'Lab' %}🔬
+                        {% else %}🎭{% endif %}
+                        {{ room.get_tipe_ruangan_display }}
+                    </span>
+                </p>
+
+                <p class="text-sm text-gray-500">
+                    <span class="inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z">
+                            </path>
+                        </svg>
+                        Kapasitas: {{ room.kapasitas }} orang
+                    </span>
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- No Results Message (hidden by default) -->
+    <div id="noResults" class="text-center py-16 hidden">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada ruangan ditemukan</h3>
+        <p class="text-gray-600">Coba ubah filter atau kata kunci pencarian</p>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+            </path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada ruangan ditemukan</h3>
+        <p class="text-gray-600">Silakan hubungi admin untuk informasi lebih lanjut</p>
+        <a href="{% url 'home' %}"
+            class="inline-flex items-center mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
+            </svg>
+            Kembali ke Beranda
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for filtering -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('#filterButtons .filter-btn');
+        const roomCards = document.querySelectorAll('#roomGrid .room-card');
+        const navbarSearch = document.getElementById('navbarSearchInput');
+        const roomCount = document.getElementById('roomCount');
+        const noResults = document.getElementById('noResults');
+        const roomGrid = document.getElementById('roomGrid');
+
+        let currentFilter = 'all';
+
+        // Filter function - respects both filter and navbar search
+        function filterRooms() {
+            const searchTerm = navbarSearch ? navbarSearch.value.toLowerCase() : '';
+            let visibleCount = 0;
+
+            roomCards.forEach(card => {
+                const roomType = (card.dataset.roomType || '').toLowerCase();
+                const roomName = (card.dataset.roomName || '').toLowerCase();
+
+                const matchesFilter = currentFilter === 'all' || roomType === currentFilter;
+                const matchesSearch = searchTerm === '' || roomName.startsWith(searchTerm);
+
+                if (matchesFilter && matchesSearch) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Update count
+            if (roomCount) {
+                roomCount.textContent = `Menampilkan ${visibleCount} ruangan`;
+            }
+
+            // Show/hide no results message
+            if (noResults && roomGrid) {
+                if (visibleCount === 0 && roomCards.length > 0) {
+                    noResults.classList.remove('hidden');
+                    roomGrid.classList.add('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                    roomGrid.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Filter button click handlers
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Update active state
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-gradient-to-r', 'from-blue-500', 'to-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+                    btn.classList.add('bg-white', 'border-2', 'border-gray-200', 'text-gray-600');
+                });
+
+                this.classList.remove('bg-white', 'border-2', 'border-gray-200', 'text-gray-600');
+                this.classList.add('active', 'bg-gradient-to-r', 'from-blue-500', 'to-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+
+                currentFilter = this.dataset.filter;
+                filterRooms();
+            });
+        });
+
+        // Listen for navbar search changes (triggered by base.html)
+        if (navbarSearch) {
+            navbarSearch.addEventListener('input', function () {
+                filterRooms();
+            });
+        }
+
+        // Make filterRooms globally accessible for base.html integration
+        window.filterRoomsPage = filterRooms;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,197 @@
+================================================================================
+                    SMARTSPACE UPY - SUMMARY FITUR & REQUIREMENT
+                        Platform Peminjaman Ruangan Kampus
+================================================================================
+
+OVERVIEW
+--------
+SmartSpace UPY adalah platform peminjaman ruangan kampus berbasis web untuk 
+Universitas PGRI Yogyakarta.
+
+
+================================================================================
+                              FITUR UTAMA (11 FITUR)
+================================================================================
+
+1. MANAJEMEN RUANGAN
+   - Daftar ruangan (Kelas, Lab, Aula) dengan foto, kapasitas, fasilitas
+   - Halaman detail dengan deskripsi, peraturan, kalender ketersediaan
+   - Filter & search berdasarkan tipe dan kapasitas
+
+2. SISTEM BOOKING (PEMINJAMAN)
+   - Form booking: pilih tanggal, jam mulai/selesai, jumlah tamu, keperluan
+   - Conflict detection: cek otomatis bentrok jadwal
+   - Upload dokumen pendukung (PDF, DOC)
+   - Status tracking: Pending → Approved/Rejected/Cancelled
+   - Cancel booking untuk status pending
+
+3. USER AUTHENTICATION & PROFILE
+   - Register dengan NPM/NIP, nama, password, role
+   - Login dengan NPM/NIP dan password
+   - Edit profile: nama, program studi, angkatan, nomor HP
+   - Role-based access: Mahasiswa, Dosen, Staff, Admin
+
+4. DASHBOARD USER
+   - Riwayat semua peminjaman dengan status
+   - Quick actions: cancel booking, lihat detail
+
+5. WISHLIST (FAVORIT)
+   - Toggle wishlist untuk simpan ruangan favorit
+   - Halaman wishlist khusus
+   - Badge counter di navbar
+
+6. MESSAGING SYSTEM (CHAT USER ↔ ADMIN)
+   - User bisa kirim pesan ke admin
+   - File attachment (gambar/dokumen)
+   - Real-time polling (pesan baru tanpa refresh)
+   - Unread badge notifikasi
+
+7. ADMIN CHAT DASHBOARD (WHATSAPP-STYLE)
+   - Conversation list semua percakapan
+   - Filter tabs: All / Unread / Pinned
+   - Pin chat ke atas
+   - Dark theme high contrast
+   - Delete conversation
+
+8. AI CHATBOT (SMARTBOT)
+   - Tanya jawab bahasa natural
+   - Rekomendasi ruangan otomatis
+   - Context-aware (paham ruangan & booking)
+   - Powered by Google Gemini AI
+
+9. KALENDER VISUAL
+   - Monthly view dengan event booking
+   - Day view detail per hari
+   - Color-coded untuk setiap booking
+
+10. ADMIN DASHBOARD
+    - Statistics: total ruangan, booking pending/approved, user
+    - Activity log aktivitas terbaru
+    - Quick actions: approve/reject booking
+    - Unfold Admin dengan blue theme
+
+11. TESTIMONIAL MANAGEMENT
+    - CMS testimonial dari admin
+    - Rating system 1-5 bintang
+    - Display order di homepage
+
+
+================================================================================
+                              TECHNICAL STACK
+================================================================================
+
+BACKEND:
+  - Python 3.x
+  - Django 6.0
+  - SQLite (development) / PostgreSQL (production)
+
+FRONTEND:
+  - HTML5
+  - CSS3 (vanilla, responsive)
+  - JavaScript (vanilla)
+
+LIBRARIES & APIs:
+  - Unfold Admin (premium admin theme)
+  - Google Gemini API (AI chatbot)
+
+
+================================================================================
+                              DATABASE MODELS
+================================================================================
+
+User (Custom Django User)
+├── npm_nip, program_studi, angkatan, nomor_hp, role
+
+Room (Ruangan)
+├── nomor_ruangan, tipe_ruangan, kapasitas, fasilitas (JSON)
+├── foto_ruangan, deskripsi, peraturan, is_active
+
+Booking (Peminjaman)
+├── user (FK), room (FK)
+├── tanggal_mulai, tanggal_selesai, jumlah_tamu
+├── status (Pending/Approved/Rejected/Cancelled)
+├── keperluan, dokumen_pendukung
+
+Wishlist
+├── user (FK), room (FK)
+
+Message (Pesan)
+├── sender (FK), receiver (FK)
+├── content, attachment, is_read, message_type
+
+PinnedConversation
+├── admin (FK), user (FK)
+
+Testimonial
+├── nama, role, foto, content, rating, is_active, order
+
+
+================================================================================
+                              API ENDPOINTS
+================================================================================
+
+POST /api/register/              - Registrasi user baru
+POST /api/login/                 - Login dengan NPM/NIP
+POST /api/logout/                - Logout
+POST /api/wishlist/toggle/       - Toggle wishlist
+GET  /api/wishlist/              - Get user wishlist
+POST /api/profile/update/        - Update profile
+GET  /api/messages/              - Get user messages
+POST /api/messages/send/         - Send message to admin
+POST /api/booking/cancel/        - Cancel pending booking
+POST /api/chat/                  - AI chatbot interaction
+GET  /api/calendar/{room_id}/    - Get booking calendar
+GET  /api/booked-slots/{room}/   - Get booked time slots
+POST /api/check-conflict/        - Check booking conflict
+
+
+================================================================================
+                              PAGES / ROUTES
+================================================================================
+
+/                    - Home (landing page, daftar ruangan)
+/room/{id}/          - Room Detail & form booking
+/dashboard/          - Dashboard user (riwayat booking)
+/profile/            - Edit profil user
+/wishlist/           - Ruangan favorit
+/messages/           - Chat dengan admin
+/admin/              - Admin dashboard
+/admin/chat/         - Admin chat WhatsApp-style
+
+
+================================================================================
+                              REQUIREMENTS
+================================================================================
+
+MINIMUM HARDWARE:
+  - Server: 1 CPU, 2GB RAM, 10GB Storage
+  - Client: Browser modern (Chrome, Firefox, Edge, Safari)
+
+SOFTWARE REQUIREMENTS:
+  - Python 3.10+
+  - Django 6.0+
+  - Google Gemini API Key (untuk AI chatbot)
+
+DEVELOPMENT TIME ESTIMATE:
+  - Planning & Design:                    1-2 minggu
+  - Core Features (Auth, Booking, Room):  3-4 minggu
+  - Advanced Features (Chat, AI, Calendar): 2-3 minggu
+  - Testing & Polish:                     1-2 minggu
+  ----------------------------------------
+  TOTAL:                                  7-11 minggu
+
+
+================================================================================
+                              UNIQUE SELLING POINTS
+================================================================================
+
+1. AI-POWERED      - Chatbot cerdas dengan Google Gemini
+2. REAL-TIME CHAT  - Komunikasi langsung User ↔ Admin
+3. CONFLICT PREVENTION - Tidak ada double booking
+4. MODERN UI/UX    - Desain premium dan responsive
+5. ROLE-BASED      - Multi-user types (Mahasiswa, Dosen, Staff)
+
+
+================================================================================
+                    © 2024 SmartSpace UPY - Universitas PGRI Yogyakarta
+================================================================================

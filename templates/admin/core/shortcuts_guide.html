@@ -1,0 +1,121 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 24px;">
+    <div
+        style="background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%); border-radius: 16px; padding: 32px; margin-bottom: 32px; color: white;">
+        <h1 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 700;">⌨️ Keyboard Shortcuts</h1>
+        <p style="margin: 0; opacity: 0.9; font-size: 16px;">Panduan shortcut keyboard untuk navigasi cepat di
+            SmartSpace Admin</p>
+    </div>
+
+    <div
+        style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #F8FAFC; border-bottom: 2px solid #E2E8F0;">
+                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151; width: 100px;">
+                        Shortcut</th>
+                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151; width: 150px;">
+                        Aksi</th>
+                    <th style="padding: 16px 20px; text-align: left; font-weight: 600; color: #374151;">Deskripsi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">S</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Sidebar Search</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Fokus ke pencarian di sidebar (kiri)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">/</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Table Search</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Fokus ke pencarian tabel (kanan)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">D</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Dashboard</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke Dashboard</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">U</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Users</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman Users</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">R</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Ruangan</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman Ruangan</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">P</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Peminjaman</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman Peminjaman</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">W</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Wishlist</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman Wishlist</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">C</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Chat User</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman Chat</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">T</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Testimoni</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman Testimoni</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0;">
+                    <td style="padding: 14px 20px;"><kbd
+                            style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border-radius: 8px; font-family: monospace; font-size: 14px; font-weight: 600;">A</kbd>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 500; color: #1F2937;">Admin Shortcut</td>
+                    <td style="padding: 14px 20px; color: #6B7280;">Navigasi ke halaman ini</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div
+        style="margin-top: 24px; padding: 20px; background: #FEF3C7; border-radius: 12px; border-left: 4px solid #F59E0B;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span style="font-size: 24px;">💡</span>
+            <div>
+                <strong style="color: #92400E; display: block; margin-bottom: 4px;">Tips</strong>
+                <p style="margin: 0; color: #78350F; font-size: 14px;">
+                    Shortcut hanya aktif ketika kursor tidak berada di dalam input field atau textarea.
+                    Tekan tombol shortcut langsung untuk navigasi cepat ke halaman yang diinginkan.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 16px; text-align: center;">
+        <a href="/admin/"
+            style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #F3F4F6; color: #374151; text-decoration: none; border-radius: 8px; font-weight: 500;">
+            ← Kembali ke Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

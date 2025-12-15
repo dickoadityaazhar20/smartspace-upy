@@ -1,0 +1,519 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block title %}Chat dengan {{ user_display_name }}{% endblock %}
+{% block extrahead %}
+<style>
+    .chat-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px);
+        max-height: 850px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05)
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%);
+        padding: 20px 24px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-shrink: 0
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px;
+        border-radius: 12px;
+        cursor: pointer;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s
+    }
+
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.25)
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.3rem
+    }
+
+    .user-info h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700
+    }
+
+    .user-info p {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        opacity: 0.9
+    }
+
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        background: #0f172a
+    }
+
+    .date-divider {
+        text-align: center;
+        margin: 24px 0
+    }
+
+    .date-divider span {
+        background: rgba(100, 116, 139, 0.3);
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: #94a3b8
+    }
+
+    .message {
+        display: flex;
+        margin-bottom: 12px
+    }
+
+    .message.sent {
+        justify-content: flex-end
+    }
+
+    .message.received {
+        justify-content: flex-start
+    }
+
+    .message-wrapper {
+        position: relative;
+        max-width: 70%
+    }
+
+    .message-bubble {
+        padding: 14px 18px;
+        border-radius: 20px
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: all 0.2s;
+        background: #ef4444;
+        border: none;
+        border-radius: 10px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white
+    }
+
+    .message.sent .delete-btn {
+        left: -44px
+    }
+
+    .message.received .delete-btn {
+        right: -44px
+    }
+
+    .message-wrapper:hover .delete-btn {
+        opacity: 1
+    }
+
+    .message.sent .message-bubble {
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        color: white;
+        border-bottom-right-radius: 6px
+    }
+
+    .message.received .message-bubble {
+        background: #334155;
+        color: #f1f5f9;
+        border-bottom-left-radius: 6px
+    }
+
+    .message-content {
+        font-size: 0.95rem;
+        line-height: 1.6
+    }
+
+    .message-attachment img {
+        max-width: 280px;
+        max-height: 220px;
+        border-radius: 12px;
+        cursor: pointer
+    }
+
+    .message-attachment a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: inherit;
+        text-decoration: none
+    }
+
+    .message-meta {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-top: 6px;
+        font-size: 0.75rem;
+        opacity: 0.7
+    }
+
+    .input-area {
+        padding: 20px 24px;
+        background: #1e293b;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        flex-shrink: 0
+    }
+
+    .input-form {
+        display: flex;
+        gap: 14px;
+        align-items: flex-end
+    }
+
+    .file-upload-btn {
+        width: 48px;
+        height: 48px;
+        background: rgba(100, 116, 139, 0.3);
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        transition: all 0.2s
+    }
+
+    .file-upload-btn:hover {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60A5FA
+    }
+
+    .message-input {
+        flex: 1;
+        padding: 14px 20px;
+        border: 2px solid rgba(100, 116, 139, 0.3);
+        border-radius: 16px;
+        font-size: 0.95rem;
+        resize: none;
+        max-height: 120px;
+        background: rgba(30, 41, 59, 0.8);
+        color: #f1f5f9
+    }
+
+    .message-input:focus {
+        outline: none;
+        border-color: #3B82F6
+    }
+
+    .send-btn {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.2s
+    }
+
+    .send-btn:hover {
+        transform: scale(1.05)
+    }
+
+    .send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed
+    }
+
+    .file-preview {
+        padding: 14px 20px;
+        background: rgba(251, 191, 36, 0.1);
+        border-top: 1px solid rgba(251, 191, 36, 0.3);
+        display: none
+    }
+
+    .file-preview.active {
+        display: flex;
+        align-items: center;
+        gap: 14px
+    }
+
+    .file-preview-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fbbf24
+    }
+
+    .file-preview img {
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+        border-radius: 10px
+    }
+
+    .file-preview-remove {
+        background: none;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        padding: 8px
+    }
+
+    .empty-chat {
+        text-align: center;
+        padding: 80px 32px;
+        color: #64748b
+    }
+
+    .empty-chat h3 {
+        color: #94a3b8;
+        margin: 0 0 8px
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="chat-wrapper">
+    <div class="chat-header">
+        <a href="{% url 'admin:chat_list' %}" class="back-btn"><svg width="20" height="20" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg></a>
+        <div class="user-avatar">{{ user_initial }}</div>
+        <div class="user-info">
+            <h3>{{ user_display_name }}</h3>
+            <p>{{ chat_user.email }} • {{ chat_user.role|default:"User" }}</p>
+        </div>
+    </div>
+    <div class="messages-area" id="messagesArea">
+        {% if messages_list %}
+        {% regroup messages_list by created_at|date:"Y-m-d" as messages_by_date %}
+        {% for date_group in messages_by_date %}
+        <div class="date-divider"><span>{{ date_group.grouper|date:"d M Y" }}</span></div>
+        {% for msg in date_group.list %}
+        <div class="message {% if msg.sender == chat_user %}received{% else %}sent{% endif %}"
+            data-message-id="{{ msg.id }}">
+            <div class="message-wrapper">
+                <button class="delete-btn delete-message-btn" data-msg-id="{{ msg.id }}" title="Hapus"><svg width="14"
+                        height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg></button>
+                <div class="message-bubble">
+                    {% if msg.attachment %}
+                    <div class="message-attachment">
+                        {% if msg.is_image %}<img src="{{ msg.attachment.url }}"
+                            onclick="window.open('{{ msg.attachment.url }}','_blank')">{% else %}<a
+                            href="{{ msg.attachment.url }}" target="_blank"><svg width="24" height="24" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>{{ msg.attachment_filename }}</a>{% endif %}
+                    </div>
+                    {% endif %}
+                    {% if msg.content %}<div class="message-content">{{ msg.content }}</div>{% endif %}
+                    <div class="message-meta"><span>{{ msg.created_at|time:"H:i" }}</span></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+        {% else %}
+        <div class="empty-chat">
+            <h3>Belum Ada Pesan</h3>
+            <p>Mulai percakapan dengan mengirim pesan</p>
+        </div>
+        {% endif %}
+    </div>
+    <div class="file-preview" id="filePreview">
+        <div class="file-preview-content" id="filePreviewContent"></div>
+        <button type="button" class="file-preview-remove" onclick="removeFile()"><svg width="20" height="20" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg></button>
+    </div>
+    <div class="input-area">
+        <form class="input-form" id="messageForm" onsubmit="sendMessage(event)">
+            <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(this)">
+            <button type="button" class="file-upload-btn" onclick="document.getElementById('fileInput').click()"><svg
+                    width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg></button>
+            <input type="text" class="message-input" id="messageInput" placeholder="Ketik pesan..." autocomplete="off">
+            <button type="submit" class="send-btn" id="sendBtn"><svg width="22" height="22" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg></button>
+        </form>
+    </div>
+</div>
+<script>
+    var selectedFile = null;
+    var lastMessageId = 0;
+    var pollInterval = null;
+
+    // Get last message ID on page load
+    document.querySelectorAll('[data-message-id]').forEach(function (el) {
+        var id = parseInt(el.dataset.messageId);
+        if (id > lastMessageId) lastMessageId = id;
+    });
+
+    function scrollToBottom() {
+        var m = document.getElementById('messagesArea');
+        if (m) m.scrollTop = m.scrollHeight;
+    }
+    scrollToBottom();
+
+    function formatTime() {
+        var now = new Date();
+        return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
+
+    function appendMessage(content, isSent, msgId) {
+        var area = document.getElementById('messagesArea');
+        var empty = area.querySelector('.empty-chat');
+        if (empty) empty.remove();
+
+        var msg = document.createElement('div');
+        msg.className = 'message ' + (isSent ? 'sent' : 'received');
+        msg.dataset.messageId = msgId || 'temp-' + Date.now();
+        msg.innerHTML = '<div class="message-wrapper"><div class="message-bubble"><div class="message-content">' + content + '</div><div class="message-meta"><span>' + formatTime() + '</span></div></div></div>';
+        area.appendChild(msg);
+        scrollToBottom();
+    }
+
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            selectedFile = input.files[0];
+            var preview = document.getElementById('filePreview'), content = document.getElementById('filePreviewContent');
+            content.innerHTML = '<span>' + selectedFile.name + '</span>';
+            preview.classList.add('active');
+        }
+    }
+
+    function removeFile() {
+        selectedFile = null;
+        document.getElementById('fileInput').value = '';
+        document.getElementById('filePreview').classList.remove('active');
+    }
+
+    function sendMessage(e) {
+        e.preventDefault();
+        var input = document.getElementById('messageInput'), content = input.value.trim();
+        if (!content && !selectedFile) return;
+
+        var formData = new FormData();
+        formData.append('content', content || 'Mengirim lampiran');
+        formData.append('receiver_id', '{{ chat_user.id }}');
+        if (selectedFile) formData.append('attachment', selectedFile);
+
+        // Immediately append to UI
+        if (content) appendMessage(content, true, null);
+
+        document.getElementById('sendBtn').disabled = true;
+        input.value = '';
+
+        fetch('{% url "admin:chat_send" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData
+        }).then(function (r) { return r.json() }).then(function (data) {
+            if (data.success) {
+                removeFile();
+                if (data.message_id) lastMessageId = Math.max(lastMessageId, data.message_id);
+            } else {
+                alert(data.message || 'Gagal');
+            }
+        }).catch(function () {
+            alert('Error mengirim pesan');
+        }).finally(function () {
+            document.getElementById('sendBtn').disabled = false;
+        });
+    }
+
+    function deleteMessage(id) {
+        if (!confirm('Hapus pesan ini?')) return;
+        fetch('{% url "admin:chat_delete" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ message_id: id })
+        }).then(function (r) { return r.json() }).then(function (data) {
+            if (data.success) {
+                var el = document.querySelector('[data-message-id="' + id + '"]');
+                if (el) el.remove();
+            } else {
+                alert(data.message || 'Gagal');
+            }
+        }).catch(function () { alert('Error') });
+    }
+
+    // Polling for new messages
+    function pollMessages() {
+        fetch('/admin/chat/{{ chat_user.id }}/poll/?last_id=' + lastMessageId)
+            .then(function (r) { return r.json() })
+            .then(function (data) {
+                if (data.success && data.messages && data.messages.length > 0) {
+                    data.messages.forEach(function (msg) {
+                        // Check if message already exists
+                        if (!document.querySelector('[data-message-id="' + msg.id + '"]')) {
+                            appendMessage(msg.content, msg.is_admin, msg.id);
+                            lastMessageId = Math.max(lastMessageId, msg.id);
+                        }
+                    });
+                }
+            }).catch(function () { });
+    }
+
+    // Start polling every 3 seconds
+    pollInterval = setInterval(pollMessages, 3000);
+
+    // Stop polling when leaving page
+    window.addEventListener('beforeunload', function () {
+        if (pollInterval) clearInterval(pollInterval);
+    });
+
+    // Event delegation for delete buttons
+    document.getElementById('messagesArea').addEventListener('click', function (e) {
+        var btn = e.target.closest('.delete-message-btn');
+        if (btn) {
+            var msgId = btn.dataset.msgId;
+            if (msgId) deleteMessage(parseInt(msgId));
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KampusSpace{% endblock %}</title>
+
+    <!-- Preconnect for faster CDN loading -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Critical CSS for initial loading -->
+    <style>
+        /* Loading screen */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        #page-loader.loaded {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f4f6;
+            border-top-color: #3B82F6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Prevent FOUC */
+        body {
+            opacity: 0;
+        }
+
+        body.loaded {
+            opacity: 1;
+            transition: opacity 0.2s;
+        }
+    </style>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#00A699',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts - async loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .search-shadow {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-shadow:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-shadow {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-shadow:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Expandable Search Input */
+        .search-input {
+            width: 200px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            width: 400px;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.15);
+        }
+
+        /* Button Animations */
+        .btn-secondary {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary-cta {
+            background: linear-gradient(135deg, #3B82F6 0%, #E31C5F 50%, #D70466 100%);
+            box-shadow: 0 4px 14px rgba(255, 56, 92, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 56, 92, 0.5);
+        }
+
+        .btn-primary-cta:active {
+            transform: translateY(0);
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Page Loading Spinner -->
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+
+                <!-- Logo -->
+                <a href="{% url 'home' %}" class="flex items-center space-x-3 group">
+                    <img src="/media/logo%20white%202.png" alt="SmartSpace Logo"
+                        class="w-11 h-11 rounded-xl shadow-lg shadow-primary/30 group-hover:shadow-primary/50 transition-shadow object-contain">
+                    <div class="flex flex-col">
+                        <span
+                            class="text-xl font-bold bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">SmartSpace</span>
+                        <span class="text-xs font-semibold text-gray-500 -mt-1 tracking-wider">UPY</span>
+                    </div>
+                </a>
+
+                <!-- Search Bar (Desktop) - Expandable -->
+                <div class="hidden md:flex items-center flex-1 justify-center mx-8">
+                    <div class="relative">
+                        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" placeholder="Cari ruangan..." id="navbarSearchInput"
+                            class="search-input pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-full text-sm text-gray-700 placeholder-gray-400 outline-none hover:border-gray-300">
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-3">
+                    <!-- Dashboard Button (Secondary/Ghost) -->
+                    <a href="{% url 'dashboard' %}"
+                        class="btn-secondary hidden md:inline-flex items-center px-5 py-2.5 border-2 border-gray-200 text-sm font-semibold text-gray-700 rounded-full hover:border-gray-900 hover:text-gray-900 hover:bg-gray-50">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                            </path>
+                        </svg>
+                        Dashboard
+                    </a>
+
+                    <!-- User Profile Dropdown (for logged in users) -->
+                    <div class="relative" id="userDropdownContainer" style="display: none;">
+                        <button id="userDropdownBtn"
+                            class="flex items-center space-x-2 border border-gray-200 rounded-full px-3 py-2 hover:shadow-md transition-shadow cursor-pointer">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                            <div
+                                class="w-8 h-8 bg-gradient-to-br from-primary to-blue-400 rounded-full flex items-center justify-center">
+                                <span id="userInitial" class="text-sm font-bold text-white">M</span>
+                            </div>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdownMenu"
+                            class="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 opacity-0 invisible transform -translate-y-2 transition-all duration-200 z-50">
+                            <!-- User Info Header -->
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p id="dropdownUserName" class="font-semibold text-gray-900">Mahasiswa UPY</p>
+                                <p id="dropdownUserEmail" class="text-sm text-gray-500">mahasiswa@upy.ac.id</p>
+                            </div>
+
+                            <!-- Menu Items -->
+                            <div class="py-2">
+                                <a href="/profile/"
+                                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                        </path>
+                                    </svg>
+                                    Profile
+                                </a>
+                                <a href="/wishlist/"
+                                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                        </path>
+                                    </svg>
+                                    Wishlist
+                                    <span data-wishlist-count
+                                        class="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">0</span>
+                                </a>
+                                <a href="/messages/"
+                                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                                        </path>
+                                    </svg>
+                                    Messages
+                                    <span data-message-count
+                                        class="ml-auto bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full hidden">0</span>
+                                </a>
+                            </div>
+
+                            <!-- Logout -->
+                            <div class="border-t border-gray-100 pt-2">
+                                <button id="logoutBtn"
+                                    class="flex items-center w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                        </path>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login Button (for guests) -->
+                    <button id="loginBtn"
+                        class="flex items-center space-x-2 border-2 border-gray-200 rounded-full px-4 py-2 hover:border-gray-900 hover:shadow-md transition-all cursor-pointer">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-700">Login</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden px-4 pb-4">
+            <div class="search-shadow flex items-center bg-white border border-gray-200 rounded-full px-4 py-3">
+                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" placeholder="Cari ruangan..."
+                    class="flex-1 text-sm text-gray-700 placeholder-gray-500 outline-none">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Django Messages Notification -->
+    {% if messages %}
+    <div class="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4" id="messagesContainer">
+        {% for message in messages %}
+        <div class="message-alert mb-3 transform transition-all duration-500 ease-out animate-slide-down
+                    {% if message.tags == 'success' %}
+                    bg-green-50 border border-green-200 text-green-800
+                    {% elif message.tags == 'error' %}
+                    bg-red-50 border border-red-200 text-red-800
+                    {% elif message.tags == 'warning' %}
+                    bg-yellow-50 border border-yellow-200 text-yellow-800
+                    {% else %}
+                    bg-blue-50 border border-blue-200 text-blue-800
+                    {% endif %}
+                    rounded-xl shadow-lg px-4 py-4">
+            <div class="flex items-start">
+                <!-- Icon -->
+                <div class="shrink-0 mr-3">
+                    {% if message.tags == 'success' %}
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                    </div>
+                    {% elif message.tags == 'error' %}
+                    <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    {% elif message.tags == 'warning' %}
+                    <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg>
+                    </div>
+                    {% else %}
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium text-sm">
+                        {% if message.tags == 'success' %}Berhasil!{% elif message.tags == 'error' %}Error!{% elif
+                        message.tags == 'warning' %}Perhatian!{% else %}Info{% endif %}
+                    </p>
+                    <p class="text-sm mt-0.5 opacity-90">{{ message }}</p>
+                </div>
+                <!-- Close Button -->
+                <button onclick="this.closest('.message-alert').remove()"
+                    class="shrink-0 ml-3 opacity-50 hover:opacity-100 transition-opacity">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <style>
+        @keyframes slide-down {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-down {
+            animation: slide-down 0.4s ease-out;
+        }
+    </style>
+
+    <script>
+        // Auto-dismiss messages after 5 seconds
+        setTimeout(function () {
+            const container = document.getElementById('messagesContainer');
+            if (container) {
+                container.querySelectorAll('.message-alert').forEach(function (alert) {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-20px)';
+                    setTimeout(function () {
+                        alert.remove();
+                    }, 500);
+                });
+            }
+        }, 5000);
+    </script>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Dukungan</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Pusat
+                                Bantuan</a></li>
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Panduan
+                                Peminjaman</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Komunitas</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Blog
+                                Kampus</a></li>
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Forum
+                                Diskusi</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Tentang</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Tentang
+                                Kami</a></li>
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Kebijakan
+                                Privasi</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Kontak</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-gray-900 hover:underline">Email:
+                                info@kampusspace.id</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-600">&copy; 2024 KampusSpace. All rights reserved.</p>
+                <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                    <span class="text-sm text-gray-600">Bahasa Indonesia (ID)</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modals -->
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="loginModalOverlay"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0"
+                id="loginModalContent">
+                <!-- Modal Header -->
+                <div class="relative px-6 py-5 border-b border-gray-100">
+                    <button id="closeLoginModal"
+                        class="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-900 text-center">Login ke SmartSpace</h2>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6">
+                    <form id="loginForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">NPM/NIP</label>
+                                <input type="text" id="loginNpmNip" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="Masukkan NPM atau NIP">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                <input type="password" id="loginPassword" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="Masukkan password">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="loginSubmitBtn"
+                            class="w-full mt-6 py-3.5 bg-gradient-to-r from-primary to-blue-400 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            Login
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">
+                            Belum punya akun?
+                            <button id="switchToRegister"
+                                class="text-primary font-semibold hover:underline">Daftar</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="registerModalOverlay"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0"
+                id="registerModalContent">
+                <!-- Modal Header -->
+                <div class="relative px-6 py-5 border-b border-gray-100 sticky top-0 bg-white z-10">
+                    <button id="closeRegisterModal"
+                        class="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-900 text-center">Daftar SmartSpace UPY</h2>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6">
+                    <form id="registerForm">
+                        <div class="space-y-4">
+                            <!-- Nama Lengkap -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" id="registerName" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="Masukkan nama lengkap">
+                            </div>
+
+                            <!-- NPM/NIP -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">NPM/NIP <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" id="registerNpmNip" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="Contoh: 2023.01.001">
+                            </div>
+
+                            <!-- Fakultas -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fakultas <span
+                                        class="text-red-500">*</span></label>
+                                <select id="registerFakultas" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                                    <option value="">Pilih Fakultas</option>
+                                    <option value="FKIP">Fakultas Keguruan dan Ilmu Pendidikan</option>
+                                    <option value="FEB">Fakultas Ekonomi dan Bisnis</option>
+                                    <option value="FT">Fakultas Teknik</option>
+                                    <option value="FIKES">Fakultas Ilmu Kesehatan</option>
+                                    <option value="FISIP">Fakultas Ilmu Sosial dan Ilmu Politik</option>
+                                    <option value="FAI">Fakultas Agama Islam</option>
+                                    <option value="FPSI">Fakultas Psikologi</option>
+                                </select>
+                            </div>
+
+                            <!-- Program Studi -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Program Studi <span
+                                        class="text-red-500">*</span></label>
+                                <select id="registerProdi" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                                    <option value="">Pilih Program Studi</option>
+                                    <option value="Teknik Informatika">Teknik Informatika</option>
+                                    <option value="Sistem Informasi">Sistem Informasi</option>
+                                    <option value="Manajemen">Manajemen</option>
+                                    <option value="Akuntansi">Akuntansi</option>
+                                    <option value="Psikologi">Psikologi</option>
+                                    <option value="Hukum">Hukum</option>
+                                    <option value="Pendidikan Guru SD">Pendidikan Guru SD</option>
+                                    <option value="Pendidikan Bahasa Inggris">Pendidikan Bahasa Inggris</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <!-- Status (Role) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status <span
+                                        class="text-red-500">*</span></label>
+                                <select id="registerStatus" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                                    <option value="">Pilih Status</option>
+                                    <option value="Mahasiswa">Mahasiswa</option>
+                                    <option value="Dosen">Dosen</option>
+                                    <option value="Staff">Staff</option>
+                                </select>
+                            </div>
+
+                            <!-- Angkatan -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Angkatan <span
+                                        class="text-red-500">*</span></label>
+                                <select id="registerAngkatan" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                                    <option value="">Pilih Angkatan</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2020">2020</option>
+                                    <option value="2019">2019</option>
+                                    <option value="-">Tidak Ada (Dosen/Staff)</option>
+                                </select>
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email <span
+                                        class="text-red-500">*</span></label>
+                                <input type="email" id="registerEmail" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="email@example.com">
+                            </div>
+
+                            <!-- Nomor WhatsApp -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp <span
+                                        class="text-red-500">*</span></label>
+                                <input type="tel" id="registerWhatsapp" required
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="08xxxxxxxxxx">
+                            </div>
+
+                            <!-- Password -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Password <span
+                                        class="text-red-500">*</span></label>
+                                <input type="password" id="registerPassword" required minlength="6"
+                                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                                    placeholder="Minimal 6 karakter">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="registerSubmitBtn"
+                            class="w-full mt-6 py-3.5 bg-gradient-to-r from-primary to-blue-400 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            Daftar Sekarang
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">
+                            Sudah punya akun?
+                            <button id="switchToLogin" class="text-primary font-semibold hover:underline">Login</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth JavaScript - Connected to Django Backend -->
+    <script>
+        // ============================================
+        // AUTH MANAGER - Using Django Backend
+        // ============================================
+        const AuthManager = {
+            currentUser: null,
+
+            isLoggedIn: function () {
+                return this.currentUser !== null;
+            },
+
+            getCurrentUser: function () {
+                return this.currentUser;
+            },
+
+            setUser: function (user) {
+                this.currentUser = user;
+                // Also store in localStorage for persistence across pages
+                if (user) {
+                    localStorage.setItem('smartspace_user', JSON.stringify(user));
+                } else {
+                    localStorage.removeItem('smartspace_user');
+                }
+            },
+
+            // Clear user data
+            clearUser: function () {
+                this.currentUser = null;
+                localStorage.removeItem('smartspace_user');
+            },
+
+            // Check session with Django backend - ALWAYS trust backend over localStorage
+            checkSession: async function () {
+                try {
+                    const response = await fetch('/api/check-auth/');
+                    const data = await response.json();
+
+                    if (data.authenticated) {
+                        this.setUser(data.user);
+                        return true;
+                    } else {
+                        // Not authenticated - clear any stale localStorage data
+                        this.clearUser();
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Session check failed:', error);
+                    // On network error, clear user to be safe (force re-login)
+                    this.clearUser();
+                    return false;
+                }
+            }
+        };
+
+        // ============================================
+        // UI CONTROLLER
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Elements
+            const loginBtn = document.getElementById('loginBtn');
+            const loginModal = document.getElementById('loginModal');
+            const loginModalContent = document.getElementById('loginModalContent');
+            const loginModalOverlay = document.getElementById('loginModalOverlay');
+            const closeLoginModal = document.getElementById('closeLoginModal');
+            const loginForm = document.getElementById('loginForm');
+            const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+            const registerModal = document.getElementById('registerModal');
+            const registerModalContent = document.getElementById('registerModalContent');
+            const registerModalOverlay = document.getElementById('registerModalOverlay');
+            const closeRegisterModal = document.getElementById('closeRegisterModal');
+            const registerForm = document.getElementById('registerForm');
+            const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+
+            const switchToRegister = document.getElementById('switchToRegister');
+            const switchToLogin = document.getElementById('switchToLogin');
+
+            const userDropdownContainer = document.getElementById('userDropdownContainer');
+            const userDropdownBtn = document.getElementById('userDropdownBtn');
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // Update UI based on auth state
+            function updateUI() {
+                if (AuthManager.isLoggedIn()) {
+                    const user = AuthManager.getCurrentUser();
+                    showLoggedInState(user);
+                } else {
+                    showGuestState();
+                }
+            }
+
+            function showLoggedInState(user) {
+                loginBtn.style.display = 'none';
+                userDropdownContainer.style.display = 'block';
+
+                // Update avatar with user initial
+                const avatarContainer = userDropdownBtn.querySelector('.w-8');
+                const initial = user.nama ? user.nama.charAt(0).toUpperCase() : 'U';
+                avatarContainer.innerHTML = `<span class="text-sm font-bold text-white">${initial}</span>`;
+
+                // Update dropdown info
+                document.getElementById('dropdownUserName').textContent = user.nama || user.npm_nip;
+                document.getElementById('dropdownUserEmail').textContent = user.email || user.npm_nip;
+
+                // Update wishlist count badge
+                const wishlistBadge = document.querySelector('[data-wishlist-count]');
+                if (wishlistBadge && user.wishlist_count !== undefined) {
+                    wishlistBadge.textContent = user.wishlist_count;
+                }
+
+                // Update message count badge
+                const messageBadge = document.querySelector('[data-message-count]');
+                if (messageBadge && user.unread_messages !== undefined) {
+                    if (user.unread_messages > 0) {
+                        messageBadge.textContent = user.unread_messages;
+                        messageBadge.classList.remove('hidden');
+                    } else {
+                        messageBadge.classList.add('hidden');
+                    }
+                }
+            }
+
+            function showGuestState() {
+                loginBtn.style.display = 'flex';
+                userDropdownContainer.style.display = 'none';
+            }
+
+            // Modal Functions
+            function openLoginModal() {
+                loginModal.classList.remove('hidden');
+                setTimeout(() => {
+                    loginModalContent.classList.remove('scale-95', 'opacity-0');
+                    loginModalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function closeLoginModalFn() {
+                loginModalContent.classList.remove('scale-100', 'opacity-100');
+                loginModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    loginModal.classList.add('hidden');
+                    loginForm.reset();
+                }, 200);
+            }
+
+            function openRegisterModal() {
+                registerModal.classList.remove('hidden');
+                setTimeout(() => {
+                    registerModalContent.classList.remove('scale-95', 'opacity-0');
+                    registerModalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function closeRegisterModalFn() {
+                registerModalContent.classList.remove('scale-100', 'opacity-100');
+                registerModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    registerModal.classList.add('hidden');
+                    registerForm.reset();
+                }, 200);
+            }
+
+            function toggleDropdown() {
+                if (userDropdownMenu.classList.contains('invisible')) {
+                    userDropdownMenu.classList.remove('invisible', 'opacity-0', '-translate-y-2');
+                    userDropdownMenu.classList.add('visible', 'opacity-100', 'translate-y-0');
+                } else {
+                    userDropdownMenu.classList.remove('visible', 'opacity-100', 'translate-y-0');
+                    userDropdownMenu.classList.add('invisible', 'opacity-0', '-translate-y-2');
+                }
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (userDropdownContainer && !userDropdownContainer.contains(e.target)) {
+                    userDropdownMenu.classList.remove('visible', 'opacity-100', 'translate-y-0');
+                    userDropdownMenu.classList.add('invisible', 'opacity-0', '-translate-y-2');
+                }
+            });
+
+            // Event Listeners
+            loginBtn.addEventListener('click', openLoginModal);
+            closeLoginModal.addEventListener('click', closeLoginModalFn);
+            loginModalOverlay.addEventListener('click', closeLoginModalFn);
+
+            closeRegisterModal.addEventListener('click', closeRegisterModalFn);
+            registerModalOverlay.addEventListener('click', closeRegisterModalFn);
+
+            switchToRegister.addEventListener('click', function () {
+                closeLoginModalFn();
+                setTimeout(openRegisterModal, 250);
+            });
+
+            switchToLogin.addEventListener('click', function () {
+                closeRegisterModalFn();
+                setTimeout(openLoginModal, 250);
+            });
+
+            userDropdownBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                toggleDropdown();
+            });
+
+            // Login Form Submit - Using Django API
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const npmNip = document.getElementById('loginNpmNip').value;
+                const password = document.getElementById('loginPassword').value;
+
+                // Disable button and show loading
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.textContent = 'Memproses...';
+
+                try {
+                    const response = await fetch('/api/login/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            npm_nip: npmNip,
+                            password: password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        AuthManager.setUser(data.user);
+                        closeLoginModalFn();
+                        updateUI();
+                        showToast('success', data.message);
+                    } else {
+                        showToast('error', data.message);
+                    }
+                } catch (error) {
+                    showToast('error', 'Terjadi kesalahan. Silakan coba lagi.');
+                    console.error('Login error:', error);
+                } finally {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Login';
+                }
+            });
+
+            // Register Form Submit - Using Django API
+            registerForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    nama_lengkap: document.getElementById('registerName').value,
+                    npm_nip: document.getElementById('registerNpmNip').value,
+                    fakultas: document.getElementById('registerFakultas').value,
+                    program_studi: document.getElementById('registerProdi').value,
+                    status: document.getElementById('registerStatus').value,
+                    angkatan: document.getElementById('registerAngkatan').value,
+                    email: document.getElementById('registerEmail').value,
+                    nomor_hp: document.getElementById('registerWhatsapp').value,
+                    password: document.getElementById('registerPassword').value
+                };
+
+                // Disable button and show loading
+                registerSubmitBtn.disabled = true;
+                registerSubmitBtn.textContent = 'Memproses...';
+
+                try {
+                    const response = await fetch('/api/register/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        AuthManager.setUser(data.user);
+                        closeRegisterModalFn();
+                        updateUI();
+                        showToast('success', data.message);
+                    } else {
+                        showToast('error', data.message);
+                    }
+                } catch (error) {
+                    showToast('error', 'Terjadi kesalahan. Silakan coba lagi.');
+                    console.error('Register error:', error);
+                } finally {
+                    registerSubmitBtn.disabled = false;
+                    registerSubmitBtn.textContent = 'Daftar Sekarang';
+                }
+            });
+
+            // Logout - Using Django API
+            logoutBtn.addEventListener('click', async function () {
+                try {
+                    await fetch('/api/logout/');
+                    AuthManager.clearUser();  // Use clearUser to properly remove all user data
+                    updateUI();
+                    toggleDropdown();
+                    showToast('success', 'Logout berhasil');
+                    // Redirect to home to ensure clean state
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    showToast('error', 'Gagal logout');
+                }
+            });
+
+            // Toast notification function
+            function showToast(type, message) {
+                const toast = document.createElement('div');
+                toast.className = `fixed top-24 left-1/2 -translate-x-1/2 z-[200] px-6 py-4 rounded-xl shadow-lg transform transition-all duration-300 flex items-center space-x-3 ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                    }`;
+                toast.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${type === 'success'
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>'
+                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'
+                    }
+                </svg>
+                <span class="font-medium">${message}</span>
+            `;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -20px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Make functions globally accessible
+            window.openLoginModal = openLoginModal;
+            window.AuthManager = AuthManager;
+            window.showToast = showToast;
+
+            // Room Card Click Handler - Requires Auth
+            window.handleRoomCardClick = function (roomId, roomName) {
+                if (!AuthManager.isLoggedIn()) {
+                    openLoginModal();
+                    return;
+                }
+                // User is logged in, proceed to room detail
+                window.location.href = '/room/' + roomId + '/';
+            };
+
+            // Initialize - Check session with Django backend
+            await AuthManager.checkSession();
+            updateUI();
+
+            // Check if login is required (redirected from protected page)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('login') === 'required' && !AuthManager.isLoggedIn()) {
+                // Remove the parameter from URL without refresh
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Show login modal with message
+                setTimeout(() => {
+                    openLoginModal();
+                    showToast('info', 'Silakan login terlebih dahulu untuk mengakses halaman tersebut');
+                }, 300);
+            }
+
+            // Navbar Search - Smart behavior based on current page
+            const navbarSearch = document.getElementById('navbarSearchInput');
+            if (navbarSearch) {
+                const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+                const isRoomsPage = window.location.pathname === '/rooms/' || window.location.pathname === '/rooms';
+
+                navbarSearch.addEventListener('focus', function () {
+                    if (isRoomsPage) {
+                        // On rooms page, scroll to room grid
+                        const roomGrid = document.getElementById('roomGrid');
+                        if (roomGrid) {
+                            roomGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } else if (isHomePage) {
+                        // On home page, scroll to rooms section
+                        const roomsSection = document.getElementById('rooms');
+                        if (roomsSection) {
+                            roomsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } else {
+                        // On other pages, redirect to rooms list page
+                        window.location.href = '/rooms/';
+                    }
+                });
+
+                // On rooms page, connect navbar search to filter rooms
+                if (isRoomsPage) {
+                    navbarSearch.addEventListener('input', function (e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const roomCards = document.querySelectorAll('#roomGrid .room-card');
+                        const roomCount = document.getElementById('roomCount');
+                        const noResults = document.getElementById('noResults');
+                        const roomGrid = document.getElementById('roomGrid');
+                        let visibleCount = 0;
+
+                        roomCards.forEach(card => {
+                            const roomName = (card.dataset.roomName || '').toLowerCase();
+                            const matchesSearch = searchTerm === '' || roomName.startsWith(searchTerm);
+
+                            if (matchesSearch) {
+                                card.style.display = '';
+                                visibleCount++;
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+
+                        // Update count
+                        if (roomCount) {
+                            roomCount.textContent = `Menampilkan ${visibleCount} ruangan`;
+                        }
+
+                        // Show/hide no results
+                        if (noResults && roomGrid) {
+                            if (visibleCount === 0 && roomCards.length > 0) {
+                                noResults.classList.remove('hidden');
+                                roomGrid.classList.add('hidden');
+                            } else {
+                                noResults.classList.add('hidden');
+                                roomGrid.classList.remove('hidden');
+                            }
+                        }
+                    });
+
+                    // Prevent enter key redirect
+                    navbarSearch.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                        }
+                    });
+                }
+            }
+
+            console.log('%c SmartSpace UPY - Django Auth Enabled', 'color: #3B82F6; font-weight: bold; font-size: 14px;');
+
+            // Hide loader and show page
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.add('loaded');
+                setTimeout(() => loader.remove(), 300);
+            }
+            document.body.classList.add('loaded');
+        });
+    </script>
+
+    <!-- AI CHAT WIDGET -->
+    <!-- Sticky AI Button -->
+    <button id="aiChatBtn"
+        class="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-primary to-blue-500 rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:shadow-xl hover:shadow-primary/50 hover:scale-110 transition-all duration-300 z-50 group">
+        <svg id="aiChatIcon" class="w-8 h-8 text-white transition-transform duration-300" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+            </path>
+        </svg>
+        <svg id="aiCloseIcon" class="w-8 h-8 text-white hidden transition-transform duration-300" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        <!-- Pulse animation -->
+        <span class="absolute inset-0 rounded-full bg-primary animate-ping opacity-25"></span>
+    </button>
+
+    <!-- Chat Popup Modal -->
+    <div id="aiChatModal"
+        class="fixed bottom-24 right-6 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 hidden transform transition-all duration-300 scale-95 opacity-0">
+        <!-- Chat Header -->
+        <div class="bg-gradient-to-r from-primary to-blue-500 rounded-t-2xl px-5 py-4 flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-bold text-white">SmartBot</h3>
+                <p class="text-xs text-white/80">Asisten Virtual SmartSpace UPY</p>
+            </div>
+            <button id="clearChatBtn"
+                class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                title="Clear Chat">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            <!-- Welcome Message -->
+            <div class="flex gap-3">
+                <div
+                    class="w-8 h-8 bg-gradient-to-br from-primary to-blue-400 rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                    <p class="text-sm text-gray-700">Halo! 👋 Saya <strong>SmartBot</strong>, asisten virtual SmartSpace
+                        UPY. Ada yang bisa saya bantu?</p>
+                    <p class="text-xs text-gray-400 mt-2">Coba tanyakan:</p>
+                    <ul class="text-xs text-gray-500 mt-1 space-y-1">
+                        <li>• "Saya butuh ruangan untuk 30 orang"</li>
+                        <li>• "Bagaimana cara booking ruangan?"</li>
+                        <li>• "Ruangan apa saja yang tersedia?"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator (hidden by default) -->
+        <div id="typingIndicator" class="hidden px-4 pb-2">
+            <div class="flex gap-3">
+                <div
+                    class="w-8 h-8 bg-gradient-to-br from-primary to-blue-400 rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+                    <div class="flex gap-1">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style="animation-delay: 0ms;"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style="animation-delay: 150ms;"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                            style="animation-delay: 300ms;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
+            <form id="chatForm" class="flex gap-2">
+                <input type="text" id="chatInput" placeholder="Ketik pesan..."
+                    class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-primary focus:outline-none transition-colors"
+                    autocomplete="off">
+                <button type="submit" id="chatSendBtn"
+                    class="px-4 py-3 bg-gradient-to-r from-primary to-blue-400 text-white rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Chat JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const aiChatBtn = document.getElementById('aiChatBtn');
+            const aiChatModal = document.getElementById('aiChatModal');
+            const aiChatIcon = document.getElementById('aiChatIcon');
+            const aiCloseIcon = document.getElementById('aiCloseIcon');
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const clearChatBtn = document.getElementById('clearChatBtn');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+
+            let isChatOpen = false;
+
+            // Toggle chat modal
+            aiChatBtn.addEventListener('click', function () {
+                isChatOpen = !isChatOpen;
+
+                if (isChatOpen) {
+                    aiChatModal.classList.remove('hidden');
+                    setTimeout(() => {
+                        aiChatModal.classList.remove('scale-95', 'opacity-0');
+                        aiChatModal.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                    aiChatIcon.classList.add('hidden');
+                    aiCloseIcon.classList.remove('hidden');
+                    chatInput.focus();
+                    // Stop pulse animation
+                    aiChatBtn.querySelector('.animate-ping').classList.add('hidden');
+                } else {
+                    aiChatModal.classList.remove('scale-100', 'opacity-100');
+                    aiChatModal.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => {
+                        aiChatModal.classList.add('hidden');
+                    }, 300);
+                    aiChatIcon.classList.remove('hidden');
+                    aiCloseIcon.classList.add('hidden');
+                }
+            });
+
+            // Send message
+            chatForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const message = chatInput.value.trim();
+                if (!message) return;
+
+                // Add user message to chat
+                addMessage(message, 'user');
+                chatInput.value = '';
+                chatSendBtn.disabled = true;
+
+                // Show typing indicator
+                typingIndicator.classList.remove('hidden');
+                scrollToBottom();
+
+                try {
+                    // Send to API
+                    const response = await fetch('/api/chat/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    const data = await response.json();
+
+                    // Hide typing indicator
+                    typingIndicator.classList.add('hidden');
+
+                    // Add AI response
+                    if (data.success) {
+                        addMessage(data.response, 'ai');
+                    } else {
+                        addMessage(data.response || 'Maaf, terjadi kesalahan. Silakan coba lagi.', 'ai');
+                    }
+                } catch (error) {
+                    console.error('Chat error:', error);
+                    typingIndicator.classList.add('hidden');
+                    addMessage('Maaf, saya sedang tidak dapat merespons. Silakan coba lagi nanti.', 'ai');
+                }
+
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            });
+
+            // Add message to chat
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'flex gap-3 ' + (sender === 'user' ? 'flex-row-reverse' : '');
+
+                if (sender === 'user') {
+                    messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-primary text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm max-w-[80%]">
+                        <p class="text-sm">${escapeHtml(text)}</p>
+                    </div>
+                `;
+                } else {
+                    messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary to-blue-400 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                        <p class="text-sm text-gray-700">${formatAIResponse(text)}</p>
+                    </div>
+                `;
+                }
+
+                chatMessages.appendChild(messageDiv);
+                scrollToBottom();
+            }
+
+            // Format AI response (handle markdown-like formatting)
+            function formatAIResponse(text) {
+                // Convert line breaks
+                text = text.replace(/\n/g, '<br>');
+                // Bold text
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Bullet points
+                text = text.replace(/• /g, '&bull; ');
+                return text;
+            }
+
+            // Escape HTML to prevent XSS
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Scroll to bottom of chat
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Clear chat
+            clearChatBtn.addEventListener('click', function () {
+                chatMessages.innerHTML = `
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary to-blue-400 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                        <p class="text-sm text-gray-700">Chat telah direset. Ada yang bisa saya bantu? 😊</p>
+                    </div>
+                </div>
+            `;
+            });
+
+            // Global function to toggle SmartBot chat (for FAQ buttons)
+            window.toggleSmartBotChat = function () {
+                if (!isChatOpen) {
+                    aiChatModal.classList.remove('hidden');
+                    setTimeout(() => {
+                        aiChatModal.classList.remove('scale-95', 'opacity-0');
+                        aiChatModal.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                    aiChatIcon.classList.add('hidden');
+                    aiCloseIcon.classList.remove('hidden');
+                    chatInput.focus();
+                    // Stop pulse animation
+                    aiChatBtn.querySelector('.animate-ping').classList.add('hidden');
+                    isChatOpen = true;
+                }
+            };
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

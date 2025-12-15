@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil - SmartSpace UPY{% endblock %}
+
+{% block content %}
+<!-- Client-side auth verification -->
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const response = await fetch('/api/check-auth/');
+            const data = await response.json();
+            if (!data.authenticated) {
+                window.location.href = '/?login=required';
+                return;
+            }
+        } catch (error) {
+            window.location.href = '/?login=required';
+        }
+    });
+</script>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Profil Saya</h1>
+        <p class="text-gray-600 mt-2">Kelola informasi profil dan lihat aktivitas Anda</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <!-- Profile Header -->
+        <div class="bg-gradient-to-r from-primary to-blue-400 px-6 py-8">
+            <div class="flex items-center space-x-4">
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+                    <span class="text-3xl font-bold text-white" id="userInitials" data-firstname="{{ user.first_name }}"
+                        data-lastname="{{ user.last_name }}" data-username="{{ user.username }}"></span>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white" id="userFullName" data-fullname="{{ user.get_full_name }}"
+                        data-username="{{ user.username }}"></h2>
+                    <p class="text-white/80" id="userNpmNip">{{ user.npm_nip }}</p>
+                    <span class="inline-block mt-2 px-3 py-1 bg-white/20 rounded-full text-sm text-white"
+                        id="userRole">{{ user.role }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                    <div class="text-2xl font-bold text-gray-900">{{ total_bookings }}</div>
+                    <div class="text-xs text-gray-500">Total Peminjaman</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                    <div class="text-2xl font-bold text-yellow-500">{{ pending_bookings }}</div>
+                    <div class="text-xs text-gray-500">Pending</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                    <div class="text-2xl font-bold text-green-500">{{ approved_bookings }}</div>
+                    <div class="text-xs text-gray-500">Disetujui</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-center shadow-sm">
+                    <div class="text-2xl font-bold text-red-500">{{ rejected_bookings }}</div>
+                    <div class="text-xs text-gray-500">Ditolak</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'dashboard' %}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                        </path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="{% url 'wishlist' %}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                        </path>
+                    </svg>
+                    Wishlist ({{ wishlist_count }})
+                </a>
+                <a href="{% url 'messages' %}"
+                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                        </path>
+                    </svg>
+                    Pesan{% if unread_messages > 0 %} <span
+                        class="ml-1 bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">{{
+                        unread_messages }}</span>{% endif %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <form id="profileForm" class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Profil</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Depan</label>
+                    <input type="text" id="firstName" value="{{ user.first_name }}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors">
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Belakang</label>
+                    <input type="text" id="lastName" value="{{ user.last_name }}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors">
+                </div>
+
+                <!-- NPM/NIP (Read Only) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">NPM/NIP</label>
+                    <input type="text" value="{{ user.npm_nip }}" disabled
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-400">NPM/NIP tidak dapat diubah</p>
+                </div>
+
+                <!-- Role (Read Only) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <input type="text" value="{{ user.role }}" disabled
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-400">Status tidak dapat diubah</p>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="email" value="{{ user.email }}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors">
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor WhatsApp</label>
+                    <input type="tel" id="nomorHp" value="{{ user.nomor_hp }}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                        placeholder="08xxxxxxxxxx">
+                </div>
+
+                <!-- Fakultas -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fakultas</label>
+                    <select id="fakultas"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                        <option value="">Pilih Fakultas</option>
+                        <option value="FKIP">Fakultas Keguruan dan Ilmu Pendidikan</option>
+                        <option value="FEB">Fakultas Ekonomi dan Bisnis</option>
+                        <option value="FT">Fakultas Teknik</option>
+                        <option value="FIKES">Fakultas Ilmu Kesehatan</option>
+                        <option value="FISIP">Fakultas Ilmu Sosial dan Ilmu Politik</option>
+                        <option value="FAI">Fakultas Agama Islam</option>
+                        <option value="FPSI">Fakultas Psikologi</option>
+                    </select>
+                </div>
+
+                <!-- Program Studi -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Program Studi</label>
+                    <select id="programStudi"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                        <option value="">Pilih Program Studi</option>
+                        <option value="Teknik Informatika">Teknik Informatika</option>
+                        <option value="Sistem Informasi">Sistem Informasi</option>
+                        <option value="Manajemen">Manajemen</option>
+                        <option value="Akuntansi">Akuntansi</option>
+                        <option value="Psikologi">Psikologi</option>
+                        <option value="Hukum">Hukum</option>
+                        <option value="Pendidikan Guru SD">Pendidikan Guru SD</option>
+                        <option value="Pendidikan Bahasa Inggris">Pendidikan Bahasa Inggris</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+
+                <!-- Angkatan -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Angkatan</label>
+                    <select id="angkatan"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-0 outline-none transition-colors bg-white">
+                        <option value="">Pilih Angkatan</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                        <option value="2019">2019</option>
+                        <option value="-">Tidak Ada (Dosen/Staff)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Joined Date -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-500">
+                    <span class="font-medium">Bergabung sejak:</span> {{ user.date_joined|date:"d F Y" }}
+                </p>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="window.location.reload()"
+                    class="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button type="submit" id="saveProfileBtn"
+                    class="px-8 py-3 bg-gradient-to-r from-primary to-blue-400 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="btn-text">Simpan Perubahan</span>
+                    <span class="btn-loading hidden">
+                        <svg class="animate-spin h-5 w-5 inline-block mr-2" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        Menyimpan...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <div class="bg-white rounded-xl shadow-2xl border border-gray-100 px-6 py-4 flex items-center space-x-3">
+        <div id="toastIcon" class="w-10 h-10 rounded-full flex items-center justify-center">
+            <!-- Icon will be inserted here -->
+        </div>
+        <div>
+            <p id="toastTitle" class="font-semibold text-gray-900"></p>
+            <p id="toastMessage" class="text-sm text-gray-600"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+<script id="userData" type="application/json">
+{
+    "fakultas": "{{ user.fakultas|escapejs }}",
+    "program_studi": "{{ user.program_studi|escapejs }}",
+    "angkatan": "{{ user.angkatan|escapejs }}"
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toast notification function
+    function showToast(type, title, message) {
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toastIcon');
+        const toastTitle = document.getElementById('toastTitle');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Set content
+        toastTitle.textContent = title;
+        toastMessage.textContent = message;
+
+        // Set icon and colors based on type
+        if (type === 'success') {
+            toastIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-100';
+            toastIcon.innerHTML = '<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        } else if (type === 'error') {
+            toastIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-red-100';
+            toastIcon.innerHTML = '<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        } else {
+            toastIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-blue-100';
+            toastIcon.innerHTML = '<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+        }
+
+        // Show toast
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+
+        // Hide after 4 seconds
+        setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }, 4000);
+    }
+
+    // Set selected values from user data and generate initials
+    document.addEventListener('DOMContentLoaded', function () {
+        // Generate user initials
+        const initialsEl = document.getElementById('userInitials');
+        if (initialsEl) {
+            const firstName = initialsEl.dataset.firstname || '';
+            const lastName = initialsEl.dataset.lastname || '';
+            const username = initialsEl.dataset.username || '';
+
+            let initials = '';
+            if (firstName) {
+                initials += firstName.charAt(0).toUpperCase();
+            }
+            if (lastName) {
+                initials += lastName.charAt(0).toUpperCase();
+            }
+            if (!initials && username) {
+                initials = username.charAt(0).toUpperCase();
+            }
+            initialsEl.textContent = initials || 'U';
+        }
+
+        // Set user fullname
+        const fullNameEl = document.getElementById('userFullName');
+        if (fullNameEl) {
+            const fullName = fullNameEl.dataset.fullname || '';
+            const username = fullNameEl.dataset.username || '';
+            fullNameEl.textContent = fullName || username || 'User';
+        }
+
+        try {
+            const userData = JSON.parse(document.getElementById('userData').textContent);
+
+            // Set Fakultas
+            const fakultasSelect = document.getElementById('fakultas');
+            if (userData.fakultas && fakultasSelect) {
+                fakultasSelect.value = userData.fakultas;
+            }
+
+            // Set Program Studi
+            const prodiSelect = document.getElementById('programStudi');
+            if (userData.program_studi && prodiSelect) {
+                prodiSelect.value = userData.program_studi;
+            }
+
+            // Set Angkatan
+            const angkatanSelect = document.getElementById('angkatan');
+            if (userData.angkatan && angkatanSelect) {
+                angkatanSelect.value = userData.angkatan;
+            }
+        } catch (e) {
+            console.error('Error parsing user data:', e);
+        }
+    });
+
+    // Handle form submission
+    document.getElementById('profileForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('saveProfileBtn');
+        const btnText = btn.querySelector('.btn-text');
+        const btnLoading = btn.querySelector('.btn-loading');
+
+        // Show loading state
+        btn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+
+        try {
+            const response = await fetch('/api/profile/update/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first_name: document.getElementById('firstName').value.trim(),
+                    last_name: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    nomor_hp: document.getElementById('nomorHp').value.trim(),
+                    fakultas: document.getElementById('fakultas').value,
+                    program_studi: document.getElementById('programStudi').value,
+                    angkatan: document.getElementById('angkatan').value
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success toast
+                showToast('success', 'Berhasil!', 'Profil berhasil diperbarui');
+
+                // Update localStorage user data
+                if (window.AuthManager) {
+                    AuthManager.setUser(data.user);
+                }
+
+                // Reload to show updated data after a short delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showToast('error', 'Gagal!', data.message || 'Terjadi kesalahan');
+                // Reset button state
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
+        } catch (error) {
+            showToast('error', 'Error!', 'Gagal menyimpan perubahan: ' + error.message);
+            // Reset button state
+            btn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat dengan Admin - SmartSpace UPY{% endblock %}
+
+{% block content %}
+<!-- Client-side auth verification -->
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const response = await fetch('/api/check-auth/');
+            const data = await response.json();
+            if (!data.authenticated) {
+                window.location.href = '/?login=required';
+                return;
+            }
+        } catch (error) {
+            window.location.href = '/?login=required';
+        }
+    });
+</script>
+
+<div class="max-w-4xl mx-auto px-4 py-6">
+    <!-- Chat Container -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col"
+        style="height: calc(100vh - 180px); min-height: 500px;">
+
+        <!-- Chat Header -->
+        <div class="bg-gradient-to-r from-primary to-blue-500 px-6 py-4 flex items-center gap-4">
+            <a href="{% url 'home' %}" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <div class="w-12 h-12 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h1 class="text-white font-semibold text-lg">Admin SmartSpace</h1>
+                <p class="text-white/70 text-sm">
+                    {% if admin_user %}
+                    {{ admin_user.get_full_name|default:admin_user.username }}
+                    {% else %}
+                    Tidak tersedia
+                    {% endif %}
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
+                <span class="text-white/80 text-sm hidden sm:inline">Online</span>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div class="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-gradient-to-b from-gray-50 to-white"
+            id="chatMessages">
+            {% if conversation %}
+            {% for msg in conversation %}
+            <div
+                class="flex {% if msg.sender == request.user %}justify-end{% else %}justify-start{% endif %} animate-fade-in">
+                <div class="max-w-[75%] {% if msg.sender == request.user %}order-1{% else %}order-2{% endif %}">
+                    <!-- Message Bubble -->
+                    <div
+                        class="{% if msg.sender == request.user %}bg-gradient-to-br from-primary to-blue-400 text-white rounded-2xl rounded-br-sm{% else %}bg-white text-gray-800 shadow-sm border border-gray-100 rounded-2xl rounded-bl-sm{% endif %} px-4 py-3">
+
+                        <!-- Attachment Preview -->
+                        {% if msg.attachment %}
+                        <div class="mb-2">
+                            {% if msg.is_image %}
+                            <img src="{{ msg.attachment.url }}" alt="Attachment"
+                                class="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                onclick="window.open('{{ msg.attachment.url }}', '_blank')">
+                            {% else %}
+                            <a href="{{ msg.attachment.url }}" target="_blank"
+                                class="flex items-center gap-2 p-3 {% if msg.sender == request.user %}bg-white/20{% else %}bg-gray-100{% endif %} rounded-lg hover:opacity-80 transition-opacity">
+                                <svg class="w-8 h-8 {% if msg.sender == request.user %}text-white{% else %}text-gray-500{% endif %}"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                                <div>
+                                    <p
+                                        class="{% if msg.sender == request.user %}text-white{% else %}text-gray-700{% endif %} font-medium text-sm truncate max-w-[150px]">
+                                        {{ msg.attachment_filename }}</p>
+                                    <p
+                                        class="{% if msg.sender == request.user %}text-white/70{% else %}text-gray-500{% endif %} text-xs">
+                                        Klik untuk download</p>
+                                </div>
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Message Content -->
+                        {% if msg.content and msg.content != 'Mengirim lampiran' %}
+                        <p class="text-[15px] leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
+                        {% endif %}
+
+                        <!-- Timestamp -->
+                        <p
+                            class="{% if msg.sender == request.user %}text-white/60{% else %}text-gray-400{% endif %} text-xs mt-1 text-right">
+                            {{ msg.created_at|date:"d M, H:i" }}
+                            {% if msg.sender == request.user %}
+                            {% if msg.is_read %}
+                            <span class="ml-1">✓✓</span>
+                            {% else %}
+                            <span class="ml-1">✓</span>
+                            {% endif %}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Empty State -->
+            <div class="flex flex-col items-center justify-center h-full text-center py-12">
+                <div
+                    class="w-24 h-24 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Mulai Percakapan</h3>
+                <p class="text-gray-500 max-w-xs">Kirim pesan pertama Anda ke Admin SmartSpace untuk bantuan atau
+                    pertanyaan.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Chat Input Area -->
+        <div class="bg-white border-t border-gray-100 px-4 py-4">
+            <form id="messageForm" enctype="multipart/form-data" class="flex items-end gap-3">
+                <!-- File Preview -->
+                <div id="filePreview"
+                    class="hidden absolute bottom-full left-0 right-0 bg-white border-t border-gray-200 p-3">
+                    <div class="flex items-center gap-3">
+                        <div id="filePreviewContent" class="flex-1 flex items-center gap-2">
+                            <!-- Preview content injected by JS -->
+                        </div>
+                        <button type="button" onclick="clearFilePreview()"
+                            class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attachment Button -->
+                <label
+                    class="flex-shrink-0 w-11 h-11 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center cursor-pointer transition-colors">
+                    <input type="file" id="fileInput" name="attachment" class="hidden" accept="image/*,.pdf,.doc,.docx">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                        </path>
+                    </svg>
+                </label>
+
+                <!-- Message Input -->
+                <div class="flex-1 relative">
+                    <textarea id="messageInput" name="content" rows="1"
+                        class="w-full px-4 py-3 bg-gray-100 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white border border-transparent focus:border-primary/30 transition-all text-gray-800 placeholder-gray-400"
+                        placeholder="Ketik pesan..." style="max-height: 120px;"></textarea>
+                </div>
+
+                <!-- Send Button -->
+                <button type="submit" id="sendBtn"
+                    class="flex-shrink-0 w-11 h-11 bg-gradient-to-br from-primary to-blue-400 hover:from-primary/90 hover:to-blue-500/90 rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    #messageInput {
+        field-sizing: content;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const filePreviewContent = document.getElementById('filePreviewContent');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Scroll to bottom on load
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    scrollToBottom();
+
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Handle file selection
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            showFilePreview(file);
+        }
+    });
+
+    function showFilePreview(file) {
+        filePreviewContent.innerHTML = '';
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                filePreviewContent.innerHTML = `
+                    <img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-700 truncate max-w-[200px]">${file.name}</p>
+                        <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            filePreviewContent.innerHTML = `
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-700 truncate max-w-[200px]">${file.name}</p>
+                    <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+                </div>
+            `;
+        }
+
+        filePreview.classList.remove('hidden');
+    }
+
+    function clearFilePreview() {
+        fileInput.value = '';
+        filePreview.classList.add('hidden');
+        filePreviewContent.innerHTML = '';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Add message to UI
+    function addUserMessage(content, attachmentData = null) {
+        const now = new Date();
+        const timeStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ', ' +
+            now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        let attachmentHtml = '';
+        if (attachmentData) {
+            if (attachmentData.is_image) {
+                attachmentHtml = `
+                    <div class="mb-2">
+                        <img src="${attachmentData.url}" alt="Attachment" 
+                             class="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                             onclick="window.open('${attachmentData.url}', '_blank')">
+                    </div>
+                `;
+            } else {
+                attachmentHtml = `
+                    <div class="mb-2">
+                        <a href="${attachmentData.url}" target="_blank" 
+                           class="flex items-center gap-2 p-3 bg-white/20 rounded-lg hover:opacity-80 transition-opacity">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <div>
+                                <p class="text-white font-medium text-sm">${attachmentData.filename}</p>
+                                <p class="text-white/70 text-xs">Klik untuk download</p>
+                            </div>
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        const contentHtml = content && content !== 'Mengirim lampiran'
+            ? `<p class="text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHtml(content)}</p>`
+            : '';
+
+        const messageHtml = `
+            <div class="flex justify-end animate-fade-in">
+                <div class="max-w-[75%]">
+                    <div class="bg-gradient-to-br from-primary to-blue-400 text-white rounded-2xl rounded-br-sm px-4 py-3">
+                        ${attachmentHtml}
+                        ${contentHtml}
+                        <p class="text-white/60 text-xs mt-1 text-right">${timeStr} <span class="ml-1">✓</span></p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove empty state if exists
+        const emptyState = chatMessages.querySelector('.flex.flex-col.items-center');
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        scrollToBottom();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Form submit
+    messageForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const content = messageInput.value.trim();
+        const file = fileInput.files[0];
+
+        if (!content && !file) return;
+
+        sendBtn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            if (content) formData.append('content', content);
+            if (file) formData.append('attachment', file);
+
+            const response = await fetch('/api/messages/send/', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Add message to UI
+                let attachmentData = null;
+                if (data.data.attachment_url) {
+                    attachmentData = {
+                        url: data.data.attachment_url,
+                        is_image: data.data.is_image,
+                        filename: data.data.attachment_filename
+                    };
+                }
+                addUserMessage(content, attachmentData);
+
+                // Clear inputs
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                clearFilePreview();
+
+                // Show success toast
+                if (typeof showToast === 'function') {
+                    showToast('success', 'Pesan terkirim');
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast('error', data.message || 'Gagal mengirim pesan');
+                } else {
+                    alert(data.message || 'Gagal mengirim pesan');
+                }
+            }
+        } catch (error) {
+            console.error('Send message error:', error);
+            if (typeof showToast === 'function') {
+                showToast('error', 'Terjadi kesalahan');
+            }
+        }
+
+        sendBtn.disabled = false;
+        messageInput.focus();
+    });
+
+    // Submit on Enter (Shift+Enter for new line)
+    messageInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // ============================================
+    // POLLING FOR NEW MESSAGES FROM ADMIN
+    // ============================================
+    let lastMessageId = 0;
+    let pollInterval = null;
+
+    // Get last message ID on page load
+    document.querySelectorAll('[data-message-id]').forEach(el => {
+        const id = parseInt(el.dataset.messageId);
+        if (id > lastMessageId) lastMessageId = id;
+    });
+
+    // Get last message ID from server-rendered data
+    const conversationData = JSON.parse('{{ conversation_ids_json|default:"[]" }}');
+    conversationData.forEach(function (id) {
+        if (id > lastMessageId) lastMessageId = id;
+    });
+
+    function addAdminMessage(content, time, msgId) {
+        const messageHtml = `
+            <div class="flex justify-start animate-fade-in" data-message-id="${msgId}">
+                <div class="max-w-[75%]">
+                    <div class="bg-white text-gray-800 shadow-sm border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
+                        <p class="text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHtml(content)}</p>
+                        <p class="text-gray-400 text-xs mt-1 text-right">${time}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove empty state if exists
+        const emptyState = chatMessages.querySelector('.flex.flex-col.items-center');
+        if (emptyState) emptyState.remove();
+
+        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        scrollToBottom();
+    }
+
+    function pollMessages() {
+        fetch('/api/messages/poll/?last_id=' + lastMessageId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => {
+                        // Only add messages from admin that don't exist yet
+                        if (msg.is_from_admin && !document.querySelector(`[data-message-id="${msg.id}"]`)) {
+                            addAdminMessage(msg.content, msg.time, msg.id);
+                        }
+                        if (msg.id > lastMessageId) lastMessageId = msg.id;
+                    });
+                }
+            })
+            .catch(() => { });
+    }
+
+    // Start polling every 3 seconds
+    pollInterval = setInterval(pollMessages, 3000);
+
+    // Stop polling when leaving page
+    window.addEventListener('beforeunload', function () {
+        if (pollInterval) clearInterval(pollInterval);
+    });
+</script>
+{% endblock %}
