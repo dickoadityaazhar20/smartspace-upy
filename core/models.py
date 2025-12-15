@@ -519,3 +519,51 @@ class ActivityLog(models.Model):
     
     def __str__(self):
         return f"{self.user} - {self.get_action_display()} {self.model_name} ({self.object_repr})"
+
+
+class PasswordResetToken(models.Model):
+    """Model untuk token reset password"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reset_tokens',
+        verbose_name='User'
+    )
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'Password Reset Token'
+        verbose_name_plural = 'Password Reset Tokens'
+    
+    def __str__(self):
+        return f"Reset token for {self.user.username}"
+    
+    @property
+    def is_valid(self):
+        """Check if token is still valid (not expired and not used)"""
+        from django.utils import timezone
+        return not self.is_used and self.expires_at > timezone.now()
+    
+    @classmethod
+    def create_token(cls, user):
+        """Create a new reset token for user, invalidating any existing ones"""
+        import secrets
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Invalidate existing tokens
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+        
+        # Create new token (valid for 1 hour)
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=1)
+        
+        return cls.objects.create(
+            user=user,
+            token=token,
+            expires_at=expires_at
+        )

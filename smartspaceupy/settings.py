@@ -120,6 +120,7 @@ UNFOLD = {
                         "title": "Peminjaman",
                         "icon": "event_available",
                         "link": reverse_lazy("admin:core_booking_changelist"),
+                        "badge": "core.admin_views.get_pending_booking_count",
                     },
                     {
                         "title": "Wishlist",

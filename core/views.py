@@ -399,6 +399,124 @@ def api_check_auth(request):
     return JsonResponse({'authenticated': False})
 
 
+@csrf_exempt
+def api_forgot_password(request):
+    """API endpoint untuk request reset password"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        email_or_npm = data.get('email_or_npm', '').strip()
+        
+        if not email_or_npm:
+            return JsonResponse({'success': False, 'message': 'Email atau NPM/NIP wajib diisi'}, status=400)
+        
+        # Find user by email or NPM
+        from django.db.models import Q
+        user = User.objects.filter(Q(email=email_or_npm) | Q(npm_nip=email_or_npm)).first()
+        
+        if not user:
+            # For security, don't reveal if user exists
+            return JsonResponse({
+                'success': True,
+                'message': 'Jika email/NPM terdaftar, link reset password akan dikirim.'
+            })
+        
+        # Create reset token
+        from .models import PasswordResetToken
+        from .email_utils import send_password_reset_email
+        
+        token_obj = PasswordResetToken.create_token(user)
+        
+        # Determine base URL
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        
+        # Send email
+        send_password_reset_email(user, token_obj.token, base_url)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Jika email/NPM terdaftar, link reset password akan dikirim.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f"Error in forgot password: {e}")
+        return JsonResponse({'success': False, 'message': 'Terjadi kesalahan server'}, status=500)
+
+
+@csrf_exempt
+def api_reset_password(request):
+    """API endpoint untuk reset password dengan token"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        token = data.get('token', '').strip()
+        new_password = data.get('new_password', '')
+        confirm_password = data.get('confirm_password', '')
+        
+        if not token:
+            return JsonResponse({'success': False, 'message': 'Token tidak valid'}, status=400)
+        
+        if not new_password or len(new_password) < 6:
+            return JsonResponse({'success': False, 'message': 'Password minimal 6 karakter'}, status=400)
+        
+        if new_password != confirm_password:
+            return JsonResponse({'success': False, 'message': 'Konfirmasi password tidak cocok'}, status=400)
+        
+        # Find and validate token
+        from .models import PasswordResetToken
+        
+        try:
+            token_obj = PasswordResetToken.objects.get(token=token)
+        except PasswordResetToken.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Link reset password tidak valid'}, status=400)
+        
+        if not token_obj.is_valid:
+            return JsonResponse({'success': False, 'message': 'Link sudah kadaluarsa atau sudah digunakan'}, status=400)
+        
+        # Update password
+        user = token_obj.user
+        user.set_password(new_password)
+        user.save()
+        
+        # Mark token as used
+        token_obj.is_used = True
+        token_obj.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Password berhasil direset! Silakan login dengan password baru.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f"Error in reset password: {e}")
+        return JsonResponse({'success': False, 'message': 'Terjadi kesalahan server'}, status=500)
+
+
+def reset_password_page(request, token):
+    """View untuk halaman reset password"""
+    from .models import PasswordResetToken
+    
+    # Validate token
+    try:
+        token_obj = PasswordResetToken.objects.get(token=token)
+        is_valid = token_obj.is_valid
+    except PasswordResetToken.DoesNotExist:
+        is_valid = False
+    
+    return render(request, 'reset_password.html', {
+        'token': token,
+        'is_valid': is_valid
+    })
+
+
 # ============================================
 # WISHLIST API
 # ============================================

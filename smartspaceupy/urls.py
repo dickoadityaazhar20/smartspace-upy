@@ -18,7 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from core.admin_views import chat_list_view, chat_detail_view, chat_send_view, chat_delete_view, chat_delete_conversation_view, chat_poll_view, chat_pin_view, admin_shortcuts_view, admin_dashboard_stats
+from core.admin_views import (
+    chat_list_view, chat_detail_view, chat_send_view, chat_delete_view, 
+    chat_delete_conversation_view, chat_poll_view, chat_pin_view, 
+    admin_shortcuts_view, admin_dashboard_stats,
+    export_users_excel, export_bookings_excel, export_bookings_pdf,
+    export_dashboard_excel, export_dashboard_pdf
+)
 
 # Add custom admin URLs to admin.site
 admin.site.get_urls_original = admin.site.get_urls
@@ -34,8 +40,15 @@ def custom_admin_urls():
         path('chat/delete/', chat_delete_view, name='chat_delete'),
         path('chat/delete-conversation/', chat_delete_conversation_view, name='chat_delete_conversation'),
         path('chat/pin/', chat_pin_view, name='chat_pin'),
+        # Export endpoints
+        path('export/users/excel/', export_users_excel, name='export_users_excel'),
+        path('export/bookings/excel/', export_bookings_excel, name='export_bookings_excel'),
+        path('export/bookings/pdf/', export_bookings_pdf, name='export_bookings_pdf'),
+        path('export/dashboard/excel/', export_dashboard_excel, name='export_dashboard_excel'),
+        path('export/dashboard/pdf/', export_dashboard_pdf, name='export_dashboard_pdf'),
     ]
     return custom_urls + admin.site.get_urls_original()
+
 
 admin.site.get_urls = custom_admin_urls
 

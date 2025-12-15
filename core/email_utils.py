@@ -344,3 +344,66 @@ def send_booking_reminder_email(booking) -> bool:
     """
     
     return send_email(user.email, subject, html_content)
+
+
+def send_password_reset_email(user, token: str, base_url: str = "https://smartspaceupy.up.railway.app") -> bool:
+    """Send password reset email with link"""
+    subject = "🔐 Reset Password - SmartSpace UPY"
+    reset_link = f"{base_url}/reset-password/{token}/"
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #3B82F6, #1D4ED8); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+            .header h1 {{ color: white; margin: 0; font-size: 24px; }}
+            .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; }}
+            .info-box {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3B82F6; text-align: center; }}
+            .btn {{ display: inline-block; padding: 14px 28px; background: #3B82F6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; }}
+            .btn:hover {{ background: #2563EB; }}
+            .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+            .warning {{ background: #FEF3C7; padding: 15px; border-radius: 8px; margin-top: 20px; color: #92400E; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🔐 Reset Password</h1>
+            </div>
+            <div class="content">
+                <h2>Halo, {user.get_full_name() or user.username}!</h2>
+                <p>Kami menerima permintaan untuk mereset password akun SmartSpace UPY Anda.</p>
+                
+                <div class="info-box">
+                    <p style="margin-bottom: 20px;">Klik tombol di bawah untuk membuat password baru:</p>
+                    <a href="{reset_link}" class="btn">Reset Password Sekarang</a>
+                </div>
+                
+                <div class="warning">
+                    <strong>⚠️ Penting:</strong>
+                    <ul style="margin: 10px 0;">
+                        <li>Link ini hanya berlaku selama <strong>1 jam</strong></li>
+                        <li>Jika Anda tidak meminta reset password, abaikan email ini</li>
+                        <li>Jangan bagikan link ini kepada siapapun</li>
+                    </ul>
+                </div>
+                
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                    Jika tombol tidak berfungsi, copy link berikut ke browser:<br>
+                    <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">{reset_link}</code>
+                </p>
+            </div>
+            <div class="footer">
+                <p>© 2024 SmartSpace UPY - Universitas PGRI Yogyakarta</p>
+                <p>Email ini dikirim secara otomatis, mohon tidak membalas email ini.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return send_email(user.email, subject, html_content)

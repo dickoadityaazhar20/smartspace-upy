@@ -390,3 +390,90 @@ def admin_dashboard_stats(request):
         'daily_trend': daily_bookings,
         'weekly_popularity': weekly_bookings
     }, encoder=DjangoJSONEncoder)
+
+
+# ============================================
+# EXPORT ENDPOINTS
+# ============================================
+
+@staff_member_required
+def export_users_excel(request):
+    """Export users list to Excel"""
+    from .export_utils import generate_users_excel
+    users = User.objects.all().order_by('-date_joined')
+    return generate_users_excel(users)
+
+
+@staff_member_required
+def export_bookings_excel(request):
+    """Export bookings list to Excel"""
+    from .export_utils import generate_bookings_excel
+    from .models import Booking
+    bookings = Booking.objects.select_related('user', 'room').order_by('-created_at')
+    return generate_bookings_excel(bookings)
+
+
+@staff_member_required
+def export_bookings_pdf(request):
+    """Export bookings list to PDF"""
+    from .export_utils import generate_bookings_pdf
+    from .models import Booking
+    bookings = Booking.objects.select_related('user', 'room').order_by('-created_at')
+    return generate_bookings_pdf(bookings)
+
+
+@staff_member_required
+def export_dashboard_excel(request):
+    """Export dashboard report to Excel"""
+    from .export_utils import generate_dashboard_excel
+    from .models import Room, Booking
+    from django.db.models import Count
+    
+    stats = {
+        'summary': {
+            'total': Booking.objects.count(),
+            'pending': Booking.objects.filter(status='Pending').count(),
+            'approved': Booking.objects.filter(status='Approved').count(),
+            'active_rooms': Room.objects.filter(is_active=True).count(),
+        },
+        'status_distribution': list(
+            Booking.objects.values('status')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+    }
+    return generate_dashboard_excel(stats)
+
+
+@staff_member_required
+def export_dashboard_pdf(request):
+    """Export dashboard report to PDF"""
+    from .export_utils import generate_dashboard_pdf
+    from .models import Room, Booking
+    from django.db.models import Count
+    
+    stats = {
+        'summary': {
+            'total': Booking.objects.count(),
+            'pending': Booking.objects.filter(status='Pending').count(),
+            'approved': Booking.objects.filter(status='Approved').count(),
+            'active_rooms': Room.objects.filter(is_active=True).count(),
+        },
+        'status_distribution': list(
+            Booking.objects.values('status')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+    }
+    return generate_dashboard_pdf(stats)
+
+
+# ============================================
+# ADMIN NOTIFICATION BADGE
+# ============================================
+
+def get_pending_booking_count(request):
+    """Get count of pending bookings for admin badge"""
+    from .models import Booking
+    count = Booking.objects.filter(status='Pending').count()
+    return count

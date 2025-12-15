@@ -18,6 +18,11 @@ urlpatterns = [
     path('api/logout/', views.api_logout, name='api_logout'),
     path('api/check-auth/', views.api_check_auth, name='api_check_auth'),
     
+    # Password Reset
+    path('api/forgot-password/', views.api_forgot_password, name='api_forgot_password'),
+    path('api/reset-password/', views.api_reset_password, name='api_reset_password'),
+    path('reset-password/<str:token>/', views.reset_password_page, name='reset_password_page'),
+    
     # Wishlist API
     path('api/wishlist/toggle/', views.api_wishlist_toggle, name='api_wishlist_toggle'),
     path('api/wishlist/list/', views.api_wishlist_list, name='api_wishlist_list'),
