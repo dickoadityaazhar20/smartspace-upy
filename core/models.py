@@ -1,5 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import os
+
+
+# Get appropriate storage for documents (PDFs, DOCs)
+def get_document_storage():
+    """Return RawMediaCloudinaryStorage in production, None (default) in development"""
+    if os.getenv('CLOUDINARY_CLOUD_NAME'):
+        from cloudinary_storage.storage import RawMediaCloudinaryStorage
+        return RawMediaCloudinaryStorage()
+    return None
 
 
 class User(AbstractUser):
@@ -191,6 +201,7 @@ class Booking(models.Model):
     keperluan = models.TextField(blank=True, verbose_name='Keperluan')
     dokumen_pendukung = models.FileField(
         upload_to='dokumen_booking/',
+        storage=get_document_storage(),
         blank=True,
         null=True,
         verbose_name='Dokumen Pendukung',
