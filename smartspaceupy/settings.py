@@ -291,6 +291,8 @@ CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', ''),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY', ''),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', ''),
+    'SECURE': True,
+    'RESOURCE_TYPE': 'auto',  # Auto-detect file type (image, raw, video)
 }
 
 # Storage configuration - Django 5.0+ uses STORAGES
