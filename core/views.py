@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.utils import timezone
-from .models import Room, Booking, User, RoomComment
+from .models import Room, Booking, User, RoomComment, RoomReport
 from .email_utils import send_welcome_email, send_booking_submitted_email
 
 
@@ -170,6 +170,42 @@ def room_detail(request, pk):
     }
     
     return render(request, 'room_detail.html', context)
+
+
+def report_room(request, pk):
+    """View untuk melaporkan masalah ruangan"""
+    room = get_object_or_404(Room, pk=pk)
+    
+    form_data = {}
+    
+    if request.method == 'POST':
+        keterangan = request.POST.get('keterangan', '').strip()
+        
+        if not keterangan:
+            messages.error(request, 'Keterangan wajib diisi!')
+            form_data['keterangan'] = keterangan
+        else:
+            # Create room report
+            user = request.user if request.user.is_authenticated else None
+            RoomReport.objects.create(
+                room=room,
+                user=user,
+                keterangan=keterangan
+            )
+            
+            messages.success(
+                request,
+                f'Laporan untuk ruangan "{room.nomor_ruangan}" berhasil dikirim! '
+                f'Terima kasih atas kontribusi Anda.'
+            )
+            return redirect('room_detail', pk=room.pk)
+    
+    context = {
+        'room': room,
+        'form_data': form_data,
+    }
+    
+    return render(request, 'report_room.html', context)
 
 
 def user_dashboard(request):

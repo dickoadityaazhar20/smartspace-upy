@@ -127,6 +127,11 @@ UNFOLD = {
                         "icon": "favorite",
                         "link": reverse_lazy("admin:core_wishlist_changelist"),
                     },
+                    {
+                        "title": "Laporan Ruangan",
+                        "icon": "report_problem",
+                        "link": reverse_lazy("admin:core_roomreport_changelist"),
+                    },
                 ],
             },
             {

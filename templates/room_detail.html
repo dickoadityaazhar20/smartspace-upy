@@ -545,8 +545,8 @@
                             </label>
                             <div id="dropZone"
                                 class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
-                                <input type="file" id="dokumen_pendukung" name="dokumen_pendukung"
-                                    accept=".pdf,.doc,.docx" class="hidden">
+                                <input type="file" id="dokumen_pendukung" name="dokumen_pendukung" accept=".pdf"
+                                    class="hidden">
                                 <div id="uploadPlaceholder">
                                     <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -555,7 +555,7 @@
                                         </path>
                                     </svg>
                                     <p class="text-sm text-gray-600 mb-1">Klik atau drag file ke sini</p>
-                                    <p class="text-xs text-gray-400">PDF, DOC, DOCX (max 5MB)</p>
+                                    <p class="text-xs text-gray-400">Hanya PDF (max 5MB)</p>
                                 </div>
                                 <div id="uploadedFile" class="hidden">
                                     <div class="flex items-center justify-center space-x-3">
@@ -621,9 +621,10 @@
 
                 <!-- Report Link -->
                 <div class="mt-4 text-center">
-                    <button class="text-sm text-gray-500 hover:text-gray-700 underline">
+                    <a href="{% url 'report_room' room.pk %}"
+                        class="text-sm text-gray-500 hover:text-red-500 underline transition-colors">
                         Laporkan ruangan ini
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

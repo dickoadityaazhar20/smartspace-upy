@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Laporkan Ruangan - {{ room.nomor_ruangan }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
+    <div class="max-w-2xl mx-auto px-4">
+        <!-- Back Button -->
+        <a href="{% url 'room_detail' room.pk %}"
+            class="inline-flex items-center gap-2 text-gray-600 hover:text-primary mb-6 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Kembali ke Detail Ruangan
+        </a>
+
+        <!-- Report Form Card -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-red-500 to-orange-500 px-8 py-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Laporkan Ruangan</h1>
+                        <p class="text-white/80">{{ room.nomor_ruangan }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form method="POST" class="p-8 space-y-6">
+                {% csrf_token %}
+
+                <!-- Room Info (Read-only) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ruangan yang Dilaporkan</label>
+                    <div class="bg-gray-100 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            </path>
+                        </svg>
+                        <span class="font-medium text-gray-800">{{ room.nomor_ruangan }}</span>
+                        <span class="text-gray-500">•</span>
+                        <span class="text-gray-600">{{ room.tipe_ruangan }}</span>
+                    </div>
+                </div>
+
+                <!-- Keterangan -->
+                <div>
+                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Keterangan Laporan <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="keterangan" name="keterangan" rows="6" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                        placeholder="Jelaskan masalah atau keluhan terkait ruangan ini...&#10;&#10;Contoh:&#10;- AC tidak berfungsi&#10;- Proyektor rusak&#10;- Kursi ada yang patah">{{ form_data.keterangan|default:'' }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">Deskripsikan masalah dengan jelas agar dapat segera ditangani
+                    </p>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit"
+                        class="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Kirim Laporan
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Note -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="text-sm text-blue-800">
+                <p class="font-medium">Informasi</p>
+                <p class="text-blue-700">Laporan Anda akan ditinjau oleh admin dan akan segera ditindaklanjuti. Terima
+                    kasih atas kontribusi Anda dalam menjaga kualitas fasilitas kampus.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<!-- Toast Messages -->
+<div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div
+        class="toast bg-{{ message.tags == 'success' and 'green' or message.tags == 'error' and 'red' or 'blue' }}-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-up">
+        {% if message.tags == 'success' %}
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        {% endif %}
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.toast').forEach(el => el.remove());
+    }, 5000);
+</script>
+{% endif %}
+{% endblock %}

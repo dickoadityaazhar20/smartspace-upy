@@ -225,7 +225,7 @@ class Booking(models.Model):
         blank=True,
         null=True,
         verbose_name='Dokumen Pendukung',
-        help_text='Upload dokumen pendukung (PDF, DOC, DOCX)'
+        help_text='Upload dokumen pendukung (hanya PDF)'
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -640,3 +640,42 @@ class RoomComment(models.Model):
         super().save(*args, **kwargs)
         # Update room's average rating
         self.room.update_average_rating()
+
+
+class RoomReport(models.Model):
+    """Model untuk Laporan Ruangan dari User"""
+    
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name='reports',
+        verbose_name='Ruangan'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='room_reports',
+        verbose_name='Pelapor'
+    )
+    keterangan = models.TextField(
+        verbose_name='Keterangan',
+        help_text='Deskripsikan masalah atau keluhan terkait ruangan ini'
+    )
+    is_resolved = models.BooleanField(
+        default=False,
+        verbose_name='Sudah Ditangani'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Laporan Ruangan'
+        verbose_name_plural = 'Laporan Ruangan'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        user_name = self.user.get_full_name() if self.user else 'Anonim'
+        return f"Laporan {self.room.nomor_ruangan} oleh {user_name}"

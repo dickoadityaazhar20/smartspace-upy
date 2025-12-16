@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('rooms/', views.rooms_list, name='rooms_list'),
     path('room/<int:pk>/', views.room_detail, name='room_detail'),
+    path('room/<int:pk>/report/', views.report_room, name='report_room'),
     path('dashboard/', views.user_dashboard, name='dashboard'),
     
     # User Pages

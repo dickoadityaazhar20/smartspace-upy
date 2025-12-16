@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.decorators import action, display
-from .models import User, Room, Booking, RoomComment
+from .models import User, Room, Booking, RoomComment, RoomReport
 from .email_utils import send_booking_approved_email, send_booking_rejected_email
 
 
@@ -434,3 +434,41 @@ class RoomCommentAdmin(ModelAdmin):
     )
     
     readonly_fields = ('user', 'room', 'rating', 'comment')
+
+
+# Room Report Admin - Laporan Ruangan
+@admin.register(RoomReport)
+class RoomReportAdmin(ModelAdmin):
+    list_display = ('room', 'get_reporter_name', 'get_keterangan_preview', 'is_resolved', 'created_at')
+    list_filter = ('is_resolved', 'room', 'created_at')
+    search_fields = ('room__nomor_ruangan', 'user__first_name', 'user__npm_nip', 'keterangan')
+    ordering = ('-created_at',)
+    list_editable = ('is_resolved',)
+    list_per_page = 25
+    
+    def get_reporter_name(self, obj):
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.username
+        return 'Anonim'
+    get_reporter_name.short_description = 'Pelapor'
+    
+    def get_keterangan_preview(self, obj):
+        if len(obj.keterangan) > 60:
+            return obj.keterangan[:60] + '...'
+        return obj.keterangan
+    get_keterangan_preview.short_description = 'Keterangan'
+    
+    fieldsets = (
+        ('Informasi Ruangan', {
+            'fields': ('room',),
+        }),
+        ('Detail Laporan', {
+            'fields': ('user', 'keterangan', 'is_resolved'),
+        }),
+        ('Waktu', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+    
+    readonly_fields = ('room', 'user', 'keterangan', 'created_at', 'updated_at')
