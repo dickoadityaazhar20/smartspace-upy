@@ -99,7 +99,7 @@ def send_welcome_email(user) -> bool:
                 </ul>
                 
                 <p style="text-align: center; margin-top: 30px;">
-                    <a href="http://127.0.0.1:8000/" class="btn">Mulai Booking Sekarang</a>
+                    <a href="https://smartspaceupy.up.railway.app/" class="btn">Mulai Booking Sekarang</a>
                 </p>
             </div>
             <div class="footer">
@@ -286,7 +286,7 @@ def send_booking_rejected_email(booking) -> bool:
                 <p>Silakan coba booking ruangan lain atau waktu yang berbeda.</p>
                 
                 <p style="text-align: center; margin-top: 30px;">
-                    <a href="http://127.0.0.1:8000/" class="btn">Coba Booking Lagi</a>
+                    <a href="https://smartspaceupy.up.railway.app/" class="btn">Coba Booking Lagi</a>
                 </p>
             </div>
             <div class="footer">
