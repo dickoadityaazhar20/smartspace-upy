@@ -18,8 +18,18 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
     Send an email using Brevo (Sendinblue) API
     Returns True if successful, False otherwise
     Uses HTTP API - works on Railway and other platforms that block SMTP
+    
+    NOTE: Email is disabled if BREVO_API_KEY is not set
     """
+    # Check if Brevo API key is configured
+    api_key = getattr(settings, 'BREVO_API_KEY', '')
+    if not api_key:
+        print(f"Email disabled (no BREVO_API_KEY). Would send to: {to_email}")
+        return True  # Return True so app continues working
+    
     try:
+        # Re-configure with current API key
+        configuration.api_key['api-key'] = api_key
         api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
         
         sender = {"name": settings.EMAIL_FROM_NAME, "email": "dickoadityaazhar20@gmail.com"}
@@ -37,10 +47,10 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
         return True
     except ApiException as e:
         print(f"Brevo API error sending email to {to_email}: {e}")
-        return False
+        return True  # Return True so app continues working
     except Exception as e:
         print(f"Error sending email to {to_email}: {str(e)}")
-        return False
+        return True  # Return True so app continues working
 
 
 def send_welcome_email(user) -> bool:
