@@ -1,31 +1,43 @@
 """
 Email Utility Module for SmartSpace UPY
-Uses Django Email Backend (Gmail SMTP)
+Uses Brevo (Sendinblue) API for sending emails
 """
 from django.conf import settings
 from django.utils import timezone
-from django.core.mail import send_mail, EmailMessage
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+
+
+# Configure Brevo API
+configuration = sib_api_v3_sdk.Configuration()
+configuration.api_key['api-key'] = getattr(settings, 'BREVO_API_KEY', '')
 
 
 def send_email(to_email: str, subject: str, html_content: str) -> bool:
     """
-    Send an email using Django Email Backend (Gmail SMTP)
+    Send an email using Brevo (Sendinblue) API
     Returns True if successful, False otherwise
-    Note: Uses fail_silently=True to prevent worker timeout on Railway
+    Uses HTTP API - works on Railway and other platforms that block SMTP
     """
     try:
-        email = EmailMessage(
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+        
+        sender = {"name": settings.EMAIL_FROM_NAME, "email": "dickoadityaazhar20@gmail.com"}
+        to = [{"email": to_email}]
+        
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            to=to,
+            sender=sender,
             subject=subject,
-            body=html_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[to_email],
+            html_content=html_content
         )
-        email.content_subtype = 'html'  # Send as HTML
-        # Use fail_silently=True to prevent Gunicorn worker timeout
-        # Email sending can be slow/blocked on some hosting platforms
-        email.send(fail_silently=True)
-        print(f"Email queued for {to_email}")
+        
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        print(f"Email sent successfully to {to_email}: {api_response}")
         return True
+    except ApiException as e:
+        print(f"Brevo API error sending email to {to_email}: {e}")
+        return False
     except Exception as e:
         print(f"Error sending email to {to_email}: {str(e)}")
         return False
