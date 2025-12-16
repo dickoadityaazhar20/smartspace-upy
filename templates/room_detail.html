@@ -134,7 +134,8 @@
                         </svg>
                         <span class="font-semibold text-gray-900" id="roomAverageRating">{{
                             room.average_rating|default:"0.0" }}</span>
-                        <span class="text-gray-500 ml-1" id="roomTotalReviews">({{ room.total_reviews }} review)</span>
+                        <span class="text-gray-500 ml-1" id="roomTotalReviews">({{ room.total_reviews|default:0 }}
+                            review)</span>
                     </div>
                 </div>
             </div>
@@ -362,7 +363,8 @@
                         </svg>
                         <span class="font-semibold text-gray-900" id="sectionRating">{{
                             room.average_rating|default:"0.0" }}</span>
-                        <span class="text-gray-500 ml-1" id="sectionReviews">({{ room.total_reviews }} ulasan)</span>
+                        <span class="text-gray-500 ml-1" id="sectionReviews">({{ room.total_reviews|default:0 }}
+                            ulasan)</span>
                     </div>
                 </div>
 
