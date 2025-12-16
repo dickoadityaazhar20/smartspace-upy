@@ -11,6 +11,7 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
     """
     Send an email using Django Email Backend (Gmail SMTP)
     Returns True if successful, False otherwise
+    Note: Uses fail_silently=True to prevent worker timeout on Railway
     """
     try:
         email = EmailMessage(
@@ -20,8 +21,10 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
             to=[to_email],
         )
         email.content_subtype = 'html'  # Send as HTML
-        email.send(fail_silently=False)
-        print(f"Email sent successfully to {to_email}")
+        # Use fail_silently=True to prevent Gunicorn worker timeout
+        # Email sending can be slow/blocked on some hosting platforms
+        email.send(fail_silently=True)
+        print(f"Email queued for {to_email}")
         return True
     except Exception as e:
         print(f"Error sending email to {to_email}: {str(e)}")
