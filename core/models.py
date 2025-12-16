@@ -107,6 +107,18 @@ class Room(models.Model):
         help_text='Hal-hal yang TIDAK BOLEH dilakukan di ruangan ini (pisahkan dengan baris baru)'
     )
     
+    # Rating fields (auto-calculated from comments)
+    average_rating = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        default=0,
+        verbose_name='Rating Rata-rata'
+    )
+    total_reviews = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Jumlah Review'
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -158,6 +170,17 @@ class Room(models.Model):
         if self.larangan:
             return [l.strip() for l in self.larangan.split('\n') if l.strip()]
         return []
+    
+    def update_average_rating(self):
+        """Update average rating based on approved comments"""
+        from django.db.models import Avg, Count
+        result = self.comments.filter(is_approved=True).aggregate(
+            avg_rating=Avg('rating'),
+            count=Count('id')
+        )
+        self.average_rating = round(result['avg_rating'] or 0, 1)
+        self.total_reviews = result['count'] or 0
+        self.save(update_fields=['average_rating', 'total_reviews'])
 
 
 class Booking(models.Model):
@@ -567,3 +590,53 @@ class PasswordResetToken(models.Model):
             token=token,
             expires_at=expires_at
         )
+
+
+class RoomComment(models.Model):
+    """Model untuk Komentar dan Rating Ruangan"""
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='room_comments',
+        verbose_name='User'
+    )
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Ruangan'
+    )
+    rating = models.PositiveIntegerField(
+        verbose_name='Rating',
+        help_text='Rating 1-5 bintang'
+    )
+    comment = models.TextField(
+        verbose_name='Komentar',
+        help_text='Komentar tentang ruangan'
+    )
+    is_approved = models.BooleanField(
+        default=True,
+        verbose_name='Disetujui'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Komentar Ruangan'
+        verbose_name_plural = 'Komentar Ruangan'
+        ordering = ['-created_at']
+        unique_together = ['user', 'room']  # 1 user hanya bisa 1 komentar per ruangan
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.room.nomor_ruangan} ({self.rating}⭐)"
+    
+    def save(self, *args, **kwargs):
+        # Ensure rating is between 1 and 5
+        if self.rating < 1:
+            self.rating = 1
+        elif self.rating > 5:
+            self.rating = 5
+        super().save(*args, **kwargs)
+        # Update room's average rating
+        self.room.update_average_rating()

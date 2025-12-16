@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.utils import timezone
-from .models import Room, Booking, User
+from .models import Room, Booking, User, RoomComment
 from .email_utils import send_welcome_email, send_booking_submitted_email
 
 
@@ -1293,3 +1293,78 @@ def api_feedback_submit(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
+
+# ============================================
+# ROOM COMMENTS & RATING API
+# ============================================
+
+@csrf_exempt
+def api_submit_comment(request, room_id):
+    """API endpoint untuk submit komentar dan rating ruangan"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Silakan login terlebih dahulu'}, status=401)
+    
+    try:
+        data = json.loads(request.body)
+        rating = int(data.get('rating', 0))
+        comment = data.get('comment', '').strip()
+        
+        if rating < 1 or rating > 5:
+            return JsonResponse({'success': False, 'message': 'Rating harus 1-5'}, status=400)
+        
+        if not comment:
+            return JsonResponse({'success': False, 'message': 'Komentar wajib diisi'}, status=400)
+        
+        room = get_object_or_404(Room, pk=room_id)
+        
+        # Check if user already commented
+        existing = RoomComment.objects.filter(user=request.user, room=room).first()
+        if existing:
+            # Update existing comment
+            existing.rating = rating
+            existing.comment = comment
+            existing.save()
+            return JsonResponse({'success': True, 'message': 'Komentar berhasil diupdate!'})
+        
+        # Create new comment
+        RoomComment.objects.create(
+            user=request.user,
+            room=room,
+            rating=rating,
+            comment=comment
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Komentar berhasil ditambahkan!'})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+def api_room_comments(request, room_id):
+    """API endpoint untuk get komentar ruangan"""
+    try:
+        room = get_object_or_404(Room, pk=room_id)
+        comments = room.comments.filter(is_approved=True).select_related('user')
+        
+        comments_data = [{
+            'id': c.id,
+            'user_name': c.user.get_full_name() or c.user.username,
+            'user_initial': (c.user.first_name[:1] if c.user.first_name else c.user.username[:1]).upper(),
+            'rating': c.rating,
+            'comment': c.comment,
+            'created_at': c.created_at.strftime('%d %b %Y, %H:%M')
+        } for c in comments]
+        
+        return JsonResponse({
+            'success': True,
+            'comments': comments_data,
+            'average_rating': float(room.average_rating),
+            'total_reviews': room.total_reviews
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)

@@ -53,5 +53,9 @@ urlpatterns = [
     # Feedback API (Kritik & Saran)
     path('feedback/', views.feedback_page, name='feedback'),
     path('api/feedback/submit/', views.api_feedback_submit, name='api_feedback_submit'),
+    
+    # Room Comments API
+    path('api/room/<int:room_id>/comments/', views.api_room_comments, name='api_room_comments'),
+    path('api/room/<int:room_id>/comment/', views.api_submit_comment, name='api_submit_comment'),
 ]
 

@@ -146,6 +146,17 @@ UNFOLD = {
                 ],
             },
             {
+                "title": "Ulasan",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Komentar Ruangan",
+                        "icon": "rate_review",
+                        "link": reverse_lazy("admin:core_roomcomment_changelist"),
+                    },
+                ],
+            },
+            {
                 "title": "Konten Website",
                 "separator": True,
                 "items": [
@@ -330,3 +341,8 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 # Resend Email Configuration
 RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
 EMAIL_FROM = os.getenv('EMAIL_FROM', 'SmartSpace UPY <onboarding@resend.dev>')
+
+# Session Configuration - Expire on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session berakhir saat browser ditutup
+SESSION_COOKIE_AGE = 86400  # 24 jam (fallback jika browser tidak ditutup)
+SESSION_SAVE_EVERY_REQUEST = True  # Refresh session setiap request

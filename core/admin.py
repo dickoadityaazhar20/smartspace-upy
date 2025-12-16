@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.decorators import action, display
-from .models import User, Room, Booking
+from .models import User, Room, Booking, RoomComment
 from .email_utils import send_booking_approved_email, send_booking_rejected_email
 
 
@@ -401,3 +401,36 @@ class ActivityLogAdmin(ModelAdmin):
     
     def has_change_permission(self, request, obj=None):
         return False
+
+
+# Room Comment Admin - Komentar & Rating Ruangan
+@admin.register(RoomComment)
+class RoomCommentAdmin(ModelAdmin):
+    list_display = ('get_user_name', 'room', 'rating', 'get_comment_preview', 'is_approved', 'created_at')
+    list_filter = ('rating', 'is_approved', 'room', 'created_at')
+    search_fields = ('user__first_name', 'user__npm_nip', 'room__nomor_ruangan', 'comment')
+    ordering = ('-created_at',)
+    list_editable = ('is_approved',)
+    list_per_page = 25
+    
+    def get_user_name(self, obj):
+        return obj.user.get_full_name() or obj.user.username
+    get_user_name.short_description = 'User'
+    get_user_name.admin_order_field = 'user__first_name'
+    
+    def get_comment_preview(self, obj):
+        if len(obj.comment) > 50:
+            return obj.comment[:50] + '...'
+        return obj.comment
+    get_comment_preview.short_description = 'Komentar'
+    
+    fieldsets = (
+        ('Informasi', {
+            'fields': ('user', 'room', 'rating'),
+        }),
+        ('Komentar', {
+            'fields': ('comment', 'is_approved'),
+        }),
+    )
+    
+    readonly_fields = ('user', 'room', 'rating', 'comment')
