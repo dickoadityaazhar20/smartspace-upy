@@ -100,7 +100,7 @@
 <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2">
     {% for message in messages %}
     <div
-        class="toast bg-{{ message.tags == 'success' and 'green' or message.tags == 'error' and 'red' or 'blue' }}-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-up">
+        class="toast {% if 'success' in message.tags %}bg-green-500{% elif 'error' in message.tags %}bg-red-500{% else %}bg-blue-500{% endif %} text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-slide-up">
         {% if message.tags == 'success' %}
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
