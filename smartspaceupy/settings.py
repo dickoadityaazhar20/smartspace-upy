@@ -338,9 +338,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Google Gemini AI Configuration
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
-# Resend Email Configuration
-RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
-EMAIL_FROM = os.getenv('EMAIL_FROM', 'SmartSpace UPY <onboarding@resend.dev>')
+# Gmail SMTP Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('GMAIL_USER', 'dickoadityaazhar20@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', 'lbksxaoqacgqyvbl')
+DEFAULT_FROM_EMAIL = f'SmartSpace UPY <{EMAIL_HOST_USER}>'
+EMAIL_FROM = DEFAULT_FROM_EMAIL  # For compatibility with existing code
 
 # Session Configuration - Expire on browser close
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session berakhir saat browser ditutup

@@ -1,35 +1,27 @@
 """
 Email Utility Module for SmartSpace UPY
-Uses Resend API for sending emails
+Uses Django Email Backend (Gmail SMTP)
 """
-import resend
 from django.conf import settings
 from django.utils import timezone
-
-
-# Initialize Resend with API key
-resend.api_key = settings.RESEND_API_KEY
+from django.core.mail import send_mail, EmailMessage
 
 
 def send_email(to_email: str, subject: str, html_content: str) -> bool:
     """
-    Send an email using Resend API
+    Send an email using Django Email Backend (Gmail SMTP)
     Returns True if successful, False otherwise
     """
     try:
-        if not settings.RESEND_API_KEY:
-            print("Warning: RESEND_API_KEY not configured")
-            return False
-        
-        params = {
-            "from": settings.EMAIL_FROM,
-            "to": [to_email],
-            "subject": subject,
-            "html": html_content,
-        }
-        
-        email = resend.Emails.send(params)
-        print(f"Email sent successfully to {to_email}: {email}")
+        email = EmailMessage(
+            subject=subject,
+            body=html_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[to_email],
+        )
+        email.content_subtype = 'html'  # Send as HTML
+        email.send(fail_silently=False)
+        print(f"Email sent successfully to {to_email}")
         return True
     except Exception as e:
         print(f"Error sending email to {to_email}: {str(e)}")
