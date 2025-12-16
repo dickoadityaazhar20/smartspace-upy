@@ -2,4 +2,4 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python manage.py migrate --noinput && gunicorn smartspaceupy.wsgi --log-file -"
+startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn smartspaceupy.wsgi --log-file -"
