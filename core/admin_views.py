@@ -36,11 +36,16 @@ def chat_list_view(request):
     admin_user = request.user
     filter_type = request.GET.get('filter', 'all')  # all, unread, pinned
     
-    # Get all users who have messaged or been messaged by admin
+    # Get ALL admin users (superusers and Admin role) to query messages sent to any admin
+    all_admin_ids = list(User.objects.filter(
+        Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+    ).values_list('id', flat=True))
+    
+    # Get all users who have messaged any admin OR been messaged by any admin
     users_with_messages = User.objects.filter(
-        Q(sent_messages__receiver=admin_user) | 
-        Q(received_messages__sender=admin_user)
-    ).distinct().exclude(is_superuser=True).exclude(role='Admin')
+        Q(sent_messages__receiver_id__in=all_admin_ids) | 
+        Q(received_messages__sender_id__in=all_admin_ids)
+    ).distinct().exclude(is_superuser=True).exclude(role='Admin').exclude(is_staff=True)
     
     # Get pinned users for this admin
     pinned_user_ids = set(
@@ -51,16 +56,16 @@ def chat_list_view(request):
     total_unread = 0
     
     for user in users_with_messages:
-        # Get last message in conversation
+        # Get last message in conversation (with any admin)
         last_message = Message.objects.filter(
-            Q(sender=user, receiver=admin_user) |
-            Q(sender=admin_user, receiver=user)
+            Q(sender=user, receiver_id__in=all_admin_ids) |
+            Q(sender_id__in=all_admin_ids, receiver=user)
         ).order_by('-created_at').first()
         
-        # Count unread messages from this user
+        # Count unread messages from this user (sent to any admin)
         unread_count = Message.objects.filter(
             sender=user,
-            receiver=admin_user,
+            receiver_id__in=all_admin_ids,
             is_read=False
         ).count()
         
@@ -104,16 +109,21 @@ def chat_detail_view(request, user_id):
     admin_user = request.user
     chat_user = get_object_or_404(User, pk=user_id)
     
-    # Get all messages between admin and this user
+    # Get ALL admin users to query messages between any admin and this user
+    all_admin_ids = list(User.objects.filter(
+        Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+    ).values_list('id', flat=True))
+    
+    # Get all messages between any admin and this user
     messages_list = Message.objects.filter(
-        Q(sender=chat_user, receiver=admin_user) |
-        Q(sender=admin_user, receiver=chat_user)
+        Q(sender=chat_user, receiver_id__in=all_admin_ids) |
+        Q(sender_id__in=all_admin_ids, receiver=chat_user)
     ).select_related('sender', 'receiver').order_by('created_at')
     
-    # Mark all messages from user as read (auto-read when entering chat)
+    # Mark all messages from user as read (to any admin)
     Message.objects.filter(
         sender=chat_user,
-        receiver=admin_user,
+        receiver_id__in=all_admin_ids,
         is_read=False
     ).update(is_read=True)
     
@@ -192,9 +202,13 @@ def chat_delete_view(request):
         
         message = get_object_or_404(Message, pk=message_id)
         
-        # Only allow deleting messages in conversations with admin
-        admin_user = request.user
-        if message.sender != admin_user and message.receiver != admin_user:
+        # Get all admin IDs to check authorization
+        all_admin_ids = list(User.objects.filter(
+            Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+        ).values_list('id', flat=True))
+        
+        # Allow deleting if sender or receiver is any admin
+        if message.sender_id not in all_admin_ids and message.receiver_id not in all_admin_ids:
             return JsonResponse({'success': False, 'message': 'Unauthorized'}, status=403)
         
         message.delete()
@@ -223,13 +237,17 @@ def chat_delete_conversation_view(request):
         if not user_id:
             return JsonResponse({'success': False, 'message': 'User ID required'}, status=400)
         
-        admin_user = request.user
         target_user = get_object_or_404(User, pk=user_id)
         
-        # Delete all messages between admin and target user
+        # Get all admin IDs
+        all_admin_ids = list(User.objects.filter(
+            Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+        ).values_list('id', flat=True))
+        
+        # Delete all messages between any admin and target user
         deleted_count, _ = Message.objects.filter(
-            Q(sender=target_user, receiver=admin_user) |
-            Q(sender=admin_user, receiver=target_user)
+            Q(sender=target_user, receiver_id__in=all_admin_ids) |
+            Q(sender_id__in=all_admin_ids, receiver=target_user)
         ).delete()
         
         return JsonResponse({
@@ -251,6 +269,11 @@ def chat_poll_view(request, user_id):
     admin_user = request.user
     chat_user = get_object_or_404(User, pk=user_id)
     
+    # Get ALL admin IDs
+    all_admin_ids = list(User.objects.filter(
+        Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+    ).values_list('id', flat=True))
+    
     # Get last_id from query params
     last_id = request.GET.get('last_id', 0)
     try:
@@ -258,16 +281,16 @@ def chat_poll_view(request, user_id):
     except:
         last_id = 0
     
-    # Get messages newer than last_id
+    # Get messages newer than last_id (with any admin)
     messages = Message.objects.filter(
-        Q(sender=chat_user, receiver=admin_user) |
-        Q(sender=admin_user, receiver=chat_user)
+        Q(sender=chat_user, receiver_id__in=all_admin_ids) |
+        Q(sender_id__in=all_admin_ids, receiver=chat_user)
     ).filter(id__gt=last_id).select_related('sender').order_by('created_at')
     
-    # Mark incoming messages as read
+    # Mark incoming messages as read (to any admin)
     Message.objects.filter(
         sender=chat_user,
-        receiver=admin_user,
+        receiver_id__in=all_admin_ids,
         is_read=False
     ).update(is_read=True)
     
@@ -278,7 +301,7 @@ def chat_poll_view(request, user_id):
             'id': msg.id,
             'content': msg.content,
             'sender_id': msg.sender.id,
-            'is_admin': msg.sender == admin_user,
+            'is_admin': msg.sender_id in all_admin_ids,
             'time': msg.created_at.strftime('%H:%M'),
             'attachment_url': msg.attachment.url if msg.attachment else None,
             'is_image': msg.is_image if hasattr(msg, 'is_image') else False
