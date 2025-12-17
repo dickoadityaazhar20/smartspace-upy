@@ -146,8 +146,7 @@
                     <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{{ fasilitas }}</span>
                     {% endfor %}
                     {% if room.fasilitas_list|length > 3 %}
-                    <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">+{{
-                        room.fasilitas_list|length|add:"-3" }} lainnya</span>
+                    <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">+{{ room.fasilitas_list|length|add:"-3" }} lainnya</span>
                     {% endif %}
                 </div>
                 {% endif %}
