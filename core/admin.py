@@ -76,7 +76,7 @@ class RoomAdmin(ModelAdmin):
     list_filter = ('tipe_ruangan', 'status', 'is_active')
     search_fields = ('nomor_ruangan',)
     ordering = ('nomor_ruangan',)
-    list_editable = ('status',)
+    list_editable = ('status', 'is_active')
     
     fieldsets = (
         ('Informasi Ruangan', {
