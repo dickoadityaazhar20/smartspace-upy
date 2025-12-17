@@ -87,11 +87,20 @@
                 {% endif %}
 
                 <!-- Status Badge -->
-                {% if room.is_active %}
+                {% if room.status == 'available' %}
                 <div
                     class="absolute top-3 left-3 px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-full flex items-center">
                     <span class="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse"></span>
                     Tersedia
+                </div>
+                {% elif room.status == 'maintenance' %}
+                <div
+                    class="absolute top-3 left-3 px-3 py-1.5 bg-yellow-500 text-white text-xs font-medium rounded-full flex items-center">
+                    🔧 Perbaikan
+                </div>
+                {% else %}
+                <div class="absolute top-3 left-3 px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-full">
+                    Tidak Tersedia
                 </div>
                 {% endif %}
             </div>

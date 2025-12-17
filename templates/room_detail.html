@@ -64,11 +64,16 @@
                 {% endif %}
 
                 <!-- Status Badge -->
-                {% if room.is_active %}
+                {% if room.status == 'available' %}
                 <div
                     class="absolute top-4 left-4 px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-full flex items-center shadow-lg">
                     <span class="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
                     Tersedia untuk Dipinjam
+                </div>
+                {% elif room.status == 'maintenance' %}
+                <div
+                    class="absolute top-4 left-4 px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-full flex items-center shadow-lg">
+                    🔧 Dalam Perbaikan
                 </div>
                 {% else %}
                 <div
@@ -437,7 +442,7 @@
                         </div>
                     </div>
 
-                    {% if room.is_active %}
+                    {% if room.status == 'available' %}
                     <!-- Booking Form -->
                     <form method="POST" enctype="multipart/form-data" class="space-y-5" id="bookingForm">
                         {% csrf_token %}
@@ -594,6 +599,38 @@
                             Anda tidak akan dikenakan biaya
                         </p>
                     </form>
+                    {% elif room.status == 'maintenance' %}
+                    <!-- Room Under Maintenance -->
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-3xl">🔧</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Ruangan Dalam Perbaikan</h3>
+                        <p class="text-sm text-gray-500 mb-2">
+                            {% if room.maintenance_note %}
+                            {{ room.maintenance_note }}
+                            {% else %}
+                            Ruangan ini sedang dalam perawatan dan tidak dapat dipinjam sementara waktu.
+                            {% endif %}
+                        </p>
+                        {% if room.maintenance_end_date %}
+                        <p class="text-sm text-yellow-600 font-medium mb-4">
+                            ⏳ Estimasi tersedia: {{ room.maintenance_end_date|date:"d F Y" }}
+                        </p>
+                        {% else %}
+                        <p class="text-sm text-gray-400 mb-4">
+                            Estimasi selesai: Belum ditentukan
+                        </p>
+                        {% endif %}
+                        <a href="{% url 'home' %}"
+                            class="inline-flex items-center text-primary font-medium hover:underline">
+                            Lihat ruangan lain
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
                     {% else %}
                     <!-- Room Not Available -->
                     <div class="text-center py-8">

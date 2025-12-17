@@ -182,11 +182,21 @@
                                             Aula
                                         </span>
                                         {% endif %}
-                                        {% if room.is_active %}
+                                        {% if room.status == 'available' %}
                                         <span
                                             class="px-3 py-1.5 bg-emerald-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
                                             <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
                                             Tersedia
+                                        </span>
+                                        {% elif room.status == 'maintenance' %}
+                                        <span
+                                            class="px-3 py-1.5 bg-yellow-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
+                                            🔧 Dalam Perbaikan
+                                        </span>
+                                        {% else %}
+                                        <span
+                                            class="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-full">
+                                            Tidak Tersedia
                                         </span>
                                         {% endif %}
                                     </div>
@@ -838,11 +848,16 @@
                 </div>
 
                 <!-- Status Badge -->
-                {% if room.is_active %}
+                {% if room.status == 'available' %}
                 <div
                     class="absolute top-3 left-3 px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-full flex items-center">
                     <span class="w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse"></span>
                     Tersedia
+                </div>
+                {% elif room.status == 'maintenance' %}
+                <div
+                    class="absolute top-3 left-3 px-3 py-1.5 bg-yellow-500 text-white text-xs font-medium rounded-full flex items-center">
+                    🔧 Dalam Perbaikan
                 </div>
                 {% else %}
                 <div class="absolute top-3 left-3 px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-full">

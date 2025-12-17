@@ -72,22 +72,26 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
 # Room Admin with Unfold
 @admin.register(Room)
 class RoomAdmin(ModelAdmin):
-    list_display = ('nomor_ruangan', 'tipe_ruangan', 'kapasitas', 'is_active', 'created_at')
-    list_filter = ('tipe_ruangan', 'is_active')
+    list_display = ('nomor_ruangan', 'tipe_ruangan', 'kapasitas', 'status', 'is_active', 'created_at')
+    list_filter = ('tipe_ruangan', 'status', 'is_active')
     search_fields = ('nomor_ruangan',)
     ordering = ('nomor_ruangan',)
-    list_editable = ('is_active',)
+    list_editable = ('status',)
     
     fieldsets = (
         ('Informasi Ruangan', {
             'fields': ('nomor_ruangan', 'tipe_ruangan', 'kapasitas')
+        }),
+        ('Status & Ketersediaan', {
+            'fields': ('status', 'maintenance_note', 'maintenance_end_date', 'is_active'),
+            'description': 'Pilih status ruangan. Jika "Dalam Perbaikan", isi catatan dan estimasi selesai.'
         }),
         ('Foto Ruangan', {
             'fields': ('foto_ruangan', 'foto_url', 'foto_drive_id'),
             'description': 'Pilih SATU sumber foto. Prioritas: Upload > URL > Google Drive ID'
         }),
         ('Detail & Fasilitas', {
-            'fields': ('fasilitas', 'is_active')
+            'fields': ('fasilitas',)
         }),
         ('Deskripsi Ruangan', {
             'fields': ('deskripsi',),

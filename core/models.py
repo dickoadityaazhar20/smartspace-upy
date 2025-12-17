@@ -61,6 +61,11 @@ class Room(models.Model):
         LAB = 'Lab', 'Lab'
         AULA = 'Aula', 'Aula'
     
+    class RoomStatus(models.TextChoices):
+        AVAILABLE = 'available', 'Tersedia'
+        MAINTENANCE = 'maintenance', 'Dalam Perbaikan'
+        UNAVAILABLE = 'unavailable', 'Tidak Tersedia'
+    
     nomor_ruangan = models.CharField(max_length=50, unique=True, verbose_name='Nama Ruangan')
     tipe_ruangan = models.CharField(
         max_length=20,
@@ -89,6 +94,25 @@ class Room(models.Model):
         help_text='Alternatif: masukkan ID file dari Google Drive (contoh: 1aBcDeFgHiJkLmNoPqRs)'
     )
     is_active = models.BooleanField(default=True, verbose_name='Aktif')
+    
+    # Room Status Fields
+    status = models.CharField(
+        max_length=20,
+        choices=RoomStatus.choices,
+        default=RoomStatus.AVAILABLE,
+        verbose_name='Status Ruangan'
+    )
+    maintenance_note = models.TextField(
+        blank=True,
+        verbose_name='Catatan Perbaikan',
+        help_text='Alasan atau detail perbaikan (opsional)'
+    )
+    maintenance_end_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name='Estimasi Selesai',
+        help_text='Perkiraan tanggal ruangan tersedia kembali (opsional)'
+    )
     
     # CMS Fields
     deskripsi = models.TextField(
@@ -170,6 +194,26 @@ class Room(models.Model):
         if self.larangan:
             return [l.strip() for l in self.larangan.split('\n') if l.strip()]
         return []
+    
+    @property
+    def is_available(self):
+        """Check if room is available for booking"""
+        return self.status == 'available'
+    
+    @property
+    def is_maintenance(self):
+        """Check if room is under maintenance"""
+        return self.status == 'maintenance'
+    
+    @property
+    def status_display_info(self):
+        """Returns dict with label, color, icon for templates"""
+        status_map = {
+            'available': {'label': 'Tersedia', 'color': 'green', 'icon': '✓'},
+            'maintenance': {'label': 'Dalam Perbaikan', 'color': 'yellow', 'icon': '🔧'},
+            'unavailable': {'label': 'Tidak Tersedia', 'color': 'red', 'icon': '✕'},
+        }
+        return status_map.get(self.status, status_map['unavailable'])
     
     def update_average_rating(self):
         """Update average rating based on approved comments"""
