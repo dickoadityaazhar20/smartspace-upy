@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from core.admin_views import (
     chat_list_view, chat_detail_view, chat_send_view, chat_delete_view, 
     chat_delete_conversation_view, chat_poll_view, chat_pin_view, 
-    admin_shortcuts_view, admin_dashboard_stats,
+    chat_conversations_poll_view, admin_shortcuts_view, admin_dashboard_stats,
     export_users_excel, export_bookings_excel, export_bookings_pdf,
     export_dashboard_excel, export_dashboard_pdf
 )
@@ -34,6 +34,7 @@ def custom_admin_urls():
         path('api/stats/', admin_dashboard_stats, name='admin_dashboard_stats'),
         path('shortcuts/', admin_shortcuts_view, name='admin_shortcuts'),
         path('chat/', chat_list_view, name='chat_list'),
+        path('chat/poll/', chat_conversations_poll_view, name='chat_conversations_poll'),
         path('chat/<int:user_id>/', chat_detail_view, name='chat_detail'),
         path('chat/<int:user_id>/poll/', chat_poll_view, name='chat_poll'),
         path('chat/send/', chat_send_view, name='chat_send'),

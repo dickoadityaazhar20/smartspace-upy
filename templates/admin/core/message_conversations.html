@@ -942,7 +942,144 @@
 
     window.addEventListener('beforeunload', () => {
         if (pollInterval) clearInterval(pollInterval);
+        if (conversationPollInterval) clearInterval(conversationPollInterval);
     });
+
+    // ============================================
+    // GLOBAL POLLING FOR CONVERSATION LIST
+    // ============================================
+    let conversationPollInterval = null;
+
+    function pollConversations() {
+        fetch('{% url "admin:chat_conversations_poll" %}')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.conversations) {
+                    updateConversationList(data.conversations, data.total_unread);
+                }
+            })
+            .catch(() => { });
+    }
+
+    function updateConversationList(conversations, totalUnread) {
+        const convList = document.getElementById('conversationList');
+        if (!convList) return;
+
+        // Update header badge
+        const headerBadge = document.querySelector('.header-badge');
+        if (headerBadge) {
+            headerBadge.textContent = conversations.length + ' Chat';
+        }
+
+        // Check for new conversations not in current list
+        conversations.forEach(conv => {
+            let existingItem = convList.querySelector(`[data-user-id="${conv.user_id}"]`);
+
+            if (existingItem) {
+                // Update existing conversation
+                const msgPreview = existingItem.querySelector('.conv-message');
+                if (msgPreview) {
+                    msgPreview.textContent = conv.last_message_content;
+                }
+
+                const timeEl = existingItem.querySelector('.conv-time');
+                if (timeEl) {
+                    timeEl.textContent = conv.last_message_time;
+                }
+
+                // Update unread badge
+                let badge = existingItem.querySelector('.conv-badge');
+                if (conv.unread_count > 0 && currentUserId !== conv.user_id) {
+                    existingItem.classList.add('has-unread');
+                    if (badge) {
+                        badge.textContent = conv.unread_count;
+                    } else {
+                        const preview = existingItem.querySelector('.conv-preview');
+                        if (preview) {
+                            badge = document.createElement('span');
+                            badge.className = 'conv-badge';
+                            badge.textContent = conv.unread_count;
+                            preview.appendChild(badge);
+                        }
+                    }
+                } else {
+                    existingItem.classList.remove('has-unread');
+                    if (badge) badge.remove();
+                }
+            } else {
+                // New conversation - add to list
+                const newItem = document.createElement('li');
+                newItem.className = 'conversation-item' + (conv.unread_count > 0 ? ' has-unread' : '') + (conv.is_pinned ? ' is-pinned' : '');
+                newItem.dataset.userId = conv.user_id;
+                newItem.dataset.userName = conv.user_display_name;
+                newItem.dataset.userInitial = conv.user_initial;
+                newItem.dataset.pinned = conv.is_pinned ? 'true' : 'false';
+                newItem.onclick = function () { loadChat(conv.user_id, conv.user_display_name, conv.user_initial); };
+
+                newItem.innerHTML = `
+                    <div class="conv-avatar">${conv.user_initial}</div>
+                    <div class="conv-content">
+                        <div class="conv-header">
+                            <span class="conv-name">${escapeHtml(conv.user_display_name)}${conv.is_pinned ? '<span class="pinned-indicator">📌</span>' : ''}</span>
+                            <span class="conv-time">${conv.last_message_time}</span>
+                        </div>
+                        <div class="conv-preview">
+                            <span class="conv-message">${escapeHtml(conv.last_message_content)}</span>
+                            ${conv.unread_count > 0 ? `<span class="conv-badge">${conv.unread_count}</span>` : ''}
+                        </div>
+                    </div>
+                    <button class="pin-btn ${conv.is_pinned ? 'pinned' : ''}" title="${conv.is_pinned ? 'Unpin' : 'Pin'}" onclick="event.stopPropagation(); togglePin(${conv.user_id}, this)">
+                        <svg width="16" height="16" fill="${conv.is_pinned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                    </button>
+                    <button class="delete-conv-btn" onclick="event.stopPropagation(); deleteConversation(${conv.user_id})" title="Hapus">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+
+                // Remove empty state if exists
+                const emptyState = convList.querySelector('.empty-state');
+                if (emptyState) emptyState.remove();
+
+                // Insert at appropriate position
+                if (conv.is_pinned) {
+                    convList.insertBefore(newItem, convList.firstElementChild);
+                } else {
+                    // Find first non-pinned item and insert before it, or append
+                    const firstNonPinned = convList.querySelector('.conversation-item:not(.is-pinned)');
+                    if (firstNonPinned) {
+                        convList.insertBefore(newItem, firstNonPinned);
+                    } else {
+                        convList.appendChild(newItem);
+                    }
+                }
+            }
+        });
+
+        // Reorder conversations based on last message
+        const items = Array.from(convList.querySelectorAll('.conversation-item'));
+        items.sort((a, b) => {
+            const aPinned = a.classList.contains('is-pinned');
+            const bPinned = b.classList.contains('is-pinned');
+            if (aPinned && !bPinned) return -1;
+            if (!aPinned && bPinned) return 1;
+
+            // Find index in conversations array
+            const aId = parseInt(a.dataset.userId);
+            const bId = parseInt(b.dataset.userId);
+            const aIndex = conversations.findIndex(c => c.user_id === aId);
+            const bIndex = conversations.findIndex(c => c.user_id === bId);
+            return aIndex - bIndex;
+        });
+
+        items.forEach(item => convList.appendChild(item));
+    }
+
+    // Start conversation list polling every 5 seconds
+    conversationPollInterval = setInterval(pollConversations, 5000);
 
     // Toggle pin status for a conversation
     function togglePin(userId, btnElement) {

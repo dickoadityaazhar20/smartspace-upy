@@ -359,6 +359,78 @@ def chat_pin_view(request):
 
 
 @staff_member_required
+def chat_conversations_poll_view(request):
+    """Poll for updated conversation list - returns all conversations with latest message info"""
+    admin_user = request.user
+    
+    # Get ALL admin users
+    all_admin_ids = list(User.objects.filter(
+        Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+    ).values_list('id', flat=True))
+    
+    # Get all users who have messaged any admin OR been messaged by any admin
+    users_with_messages = User.objects.filter(
+        Q(sent_messages__receiver_id__in=all_admin_ids) | 
+        Q(received_messages__sender_id__in=all_admin_ids)
+    ).distinct().exclude(is_superuser=True).exclude(role='Admin').exclude(is_staff=True)
+    
+    # Get pinned users for this admin
+    pinned_user_ids = set(
+        PinnedConversation.objects.filter(admin=admin_user).values_list('user_id', flat=True)
+    )
+    
+    conversations = []
+    total_unread = 0
+    
+    for user in users_with_messages:
+        # Get last message in conversation (with any admin)
+        last_message = Message.objects.filter(
+            Q(sender=user, receiver_id__in=all_admin_ids) |
+            Q(sender_id__in=all_admin_ids, receiver=user)
+        ).order_by('-created_at').first()
+        
+        # Count unread messages from this user (sent to any admin)
+        unread_count = Message.objects.filter(
+            sender=user,
+            receiver_id__in=all_admin_ids,
+            is_read=False
+        ).count()
+        
+        total_unread += unread_count
+        is_pinned = user.id in pinned_user_ids
+        
+        if last_message:
+            display_name = user.get_full_name() or user.username
+            initial = (user.first_name[0].upper() if user.first_name else user.username[0].upper())
+            
+            # Calculate time ago
+            from django.utils import timezone
+            from django.utils.timesince import timesince
+            time_ago = timesince(last_message.created_at, timezone.now())
+            
+            conversations.append({
+                'user_id': user.id,
+                'user_display_name': display_name,
+                'user_initial': initial,
+                'last_message_content': last_message.content[:35] + ('...' if len(last_message.content) > 35 else ''),
+                'last_message_time': time_ago + ' lalu',
+                'last_message_id': last_message.id,
+                'unread_count': unread_count,
+                'is_pinned': is_pinned
+            })
+    
+    # Sort: pinned first, then by last message time
+    conversations.sort(key=lambda x: (not x['is_pinned'], -x['last_message_id']))
+    
+    return JsonResponse({
+        'success': True,
+        'conversations': conversations,
+        'total_unread': total_unread,
+        'count': len(conversations)
+    })
+
+
+@staff_member_required
 def admin_dashboard_stats(request):
     """API view to provide statistics for the Admin Dashboard"""
     from django.db.models.functions import TruncDate, ExtractWeekDay

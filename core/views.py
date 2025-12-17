@@ -785,24 +785,24 @@ def api_messages_poll(request):
     except:
         last_id = 0
     
-    # Get admin user
-    admin_user = User.objects.filter(role='Admin').first()
-    if not admin_user:
-        admin_user = User.objects.filter(is_superuser=True).first()
+    # Get ALL admin user IDs (superusers, Admin role, and staff)
+    from django.db.models import Q
+    all_admin_ids = list(User.objects.filter(
+        Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+    ).values_list('id', flat=True))
     
-    if not admin_user:
+    if not all_admin_ids:
         return JsonResponse({'success': True, 'messages': [], 'count': 0})
     
-    # Get new messages from admin to this user
-    from django.db.models import Q
+    # Get new messages between user and ANY admin
     new_messages = Message.objects.filter(
-        Q(sender=admin_user, receiver=user) |
-        Q(sender=user, receiver=admin_user)
+        Q(sender_id__in=all_admin_ids, receiver=user) |
+        Q(sender=user, receiver_id__in=all_admin_ids)
     ).filter(id__gt=last_id).select_related('sender').order_by('created_at')
     
-    # Mark incoming messages as read
+    # Mark incoming messages from any admin as read
     Message.objects.filter(
-        sender=admin_user,
+        sender_id__in=all_admin_ids,
         receiver=user,
         is_read=False
     ).update(is_read=True)
@@ -812,7 +812,7 @@ def api_messages_poll(request):
         messages_data.append({
             'id': msg.id,
             'content': msg.content,
-            'is_from_admin': msg.sender == admin_user,
+            'is_from_admin': msg.sender_id in all_admin_ids,
             'is_from_user': msg.sender == user,
             'time': msg.created_at.strftime('%d %b, %H:%M'),
             'attachment_url': msg.attachment.url if msg.attachment else None,
@@ -874,23 +874,27 @@ def messages_page(request):
     if not request.user.is_authenticated:
         return redirect('/?login=required')
     
-    # Get the admin user to chat with (first superuser/admin)
+    # Get ALL admin users to query messages from any admin
+    from django.db.models import Q
+    all_admin_ids = list(User.objects.filter(
+        Q(is_superuser=True) | Q(role='Admin') | Q(is_staff=True)
+    ).values_list('id', flat=True))
+    
+    # Get the first admin for display purposes in header
     admin_user = User.objects.filter(is_superuser=True).first()
     if not admin_user:
         admin_user = User.objects.filter(role='Admin').first()
     
-    # Get all messages between this user and admin (both directions)
-    from django.db.models import Q
-    
-    if admin_user:
+    # Get all messages between this user and ANY admin (both directions)
+    if all_admin_ids:
         conversation = Message.objects.filter(
-            Q(sender=request.user, receiver=admin_user) |
-            Q(sender=admin_user, receiver=request.user)
+            Q(sender=request.user, receiver_id__in=all_admin_ids) |
+            Q(sender_id__in=all_admin_ids, receiver=request.user)
         ).select_related('sender', 'receiver').order_by('created_at')
         
         # Mark admin messages as read
         Message.objects.filter(
-            sender=admin_user, 
+            sender_id__in=all_admin_ids, 
             receiver=request.user, 
             is_read=False
         ).update(is_read=True)
