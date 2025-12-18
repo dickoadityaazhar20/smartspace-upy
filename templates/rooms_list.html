@@ -141,14 +141,10 @@
 
                 <!-- Facilities Preview -->
                 {% if room.fasilitas_list %}
-                <div class="flex flex-wrap gap-1 mb-3">
+                <div class="flex flex-wrap gap-1 mb-3" data-fasilitas-count="{{ room.fasilitas_list|length }}">
                     {% for fasilitas in room.fasilitas_list|slice:":3" %}
                     <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{{ fasilitas }}</span>
                     {% endfor %}
-                    {% if room.fasilitas_list|length > 3 %}
-                    <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">+{{
-                        room.fasilitas_list|length|add:"-3" }} lainnya</span>
-                    {% endif %}
                 </div>
                 {% endif %}
 
@@ -279,6 +275,18 @@
 
         // Make filterRooms globally accessible for base.html integration
         window.filterRoomsPage = filterRooms;
+
+        // Add extra facilities badge dynamically (same as home.html)
+        document.querySelectorAll('[data-fasilitas-count]').forEach(function (container) {
+            const count = parseInt(container.dataset.fasilitasCount);
+            if (count > 3) {
+                const extra = count - 3;
+                const badge = document.createElement('span');
+                badge.className = 'px-2 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium';
+                badge.textContent = '+' + extra + ' lainnya';
+                container.appendChild(badge);
+            }
+        });
     });
 </script>
 {% endblock %}
