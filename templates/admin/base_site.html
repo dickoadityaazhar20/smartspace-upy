@@ -1,0 +1,86 @@
+{% extends "unfold/layouts/base.html" %}
+{% load static i18n %}
+
+{% block extrahead %}
+{{ block.super }}
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    /* ============================================
+   SMARTSPACE ADMIN ENHANCEMENTS
+   ============================================ */
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* HIDE header avatar "D" - using correct selector (Unfold uses #header-inner, not <header>) */
+    #header-inner .ml-auto .mr-4,
+    #header-inner div.ml-auto div.mr-4 {
+        display: none !important;
+    }
+
+    /* Enhanced sidebar user profile */
+    aside>div:last-child {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.08)) !important;
+        border-top: 1px solid rgba(59, 130, 246, 0.15) !important;
+        margin: 8px !important;
+        border-radius: 12px !important;
+        transition: all 0.25s ease !important;
+    }
+
+    aside>div:last-child:hover {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(139, 92, 246, 0.12)) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Sidebar active link glow */
+    .dark a[aria-current="page"] {
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+
+    /* Table row hover */
+    .dark table tbody tr:hover {
+        background-color: rgba(59, 130, 246, 0.08);
+    }
+
+    /* Smooth scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #3B82F6;
+        border-radius: 3px;
+    }
+
+    /* Button hover lift */
+    button[type="submit"]:hover,
+    input[type="submit"]:hover {
+        transform: translateY(-1px);
+        transition: transform 0.15s ease;
+    }
+
+    /* Subtle fade-in */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    main>div:first-child {
+        animation: fadeIn 0.25s ease-out;
+    }
+</style>
+{% endblock %}

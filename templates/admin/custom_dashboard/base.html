@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} | SmartSpace Admin</title>
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Dashboard CSS -->
+    <link rel="stylesheet" href="{% static 'admin/css/custom_dashboard.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon material-icons-outlined">space_dashboard</span>
+                    <span class="logo-text">SmartSpace</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/smartspace-panel-upy/" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <span class="material-icons-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="nav-section">Manajemen User</div>
+                <a href="{% url 'admin:core_user_changelist' %}"
+                    class="nav-item {% if active_page == 'users' %}active{% endif %}">
+                    <span class="material-icons-outlined">people</span>
+                    <span>Users</span>
+                </a>
+
+                <div class="nav-section">Manajemen Ruang</div>
+                <a href="{% url 'admin:core_room_changelist' %}"
+                    class="nav-item {% if active_page == 'rooms' %}active{% endif %}">
+                    <span class="material-icons-outlined">meeting_room</span>
+                    <span>Ruangan</span>
+                </a>
+                <a href="{% url 'admin:core_booking_changelist' %}"
+                    class="nav-item {% if active_page == 'bookings' %}active{% endif %}">
+                    <span class="material-icons-outlined">event_available</span>
+                    <span>Peminjaman</span>
+                    {% if pending_count %}<span class="badge">{{ pending_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'admin:core_wishlist_changelist' %}"
+                    class="nav-item {% if active_page == 'wishlist' %}active{% endif %}">
+                    <span class="material-icons-outlined">favorite</span>
+                    <span>Wishlist</span>
+                </a>
+                <a href="{% url 'admin:core_roomreport_changelist' %}"
+                    class="nav-item {% if active_page == 'reports' %}active{% endif %}">
+                    <span class="material-icons-outlined">report_problem</span>
+                    <span>Laporan Ruangan</span>
+                </a>
+
+                <div class="nav-section">Komunikasi</div>
+                <a href="/smartspace-panel-upy/chat/" class="nav-item {% if active_page == 'chat' %}active{% endif %}">
+                    <span class="material-icons-outlined">chat</span>
+                    <span>Chat User</span>
+                </a>
+                <a href="{% url 'admin:core_feedback_changelist' %}"
+                    class="nav-item {% if active_page == 'feedback' %}active{% endif %}">
+                    <span class="material-icons-outlined">feedback</span>
+                    <span>Kritik & Saran</span>
+                </a>
+
+                <div class="nav-section">Ulasan</div>
+                <a href="{% url 'admin:core_roomcomment_changelist' %}"
+                    class="nav-item {% if active_page == 'comments' %}active{% endif %}">
+                    <span class="material-icons-outlined">rate_review</span>
+                    <span>Komentar Ruangan</span>
+                </a>
+            </nav>
+
+            <!-- User Profile at Bottom -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <span class="material-icons-outlined">account_circle</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                    <a href="{% url 'admin:logout' %}" class="logout-btn" title="Logout">
+                        <span class="material-icons-outlined">logout</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="search-box">
+                    <span class="material-icons-outlined">search</span>
+                    <input type="text" placeholder="Search..." id="globalSearch">
+                </div>
+
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                        <span class="material-icons-outlined">dark_mode</span>
+                    </button>
+                    <a href="/" class="header-btn" title="View Site">
+                        <span class="material-icons-outlined">open_in_new</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Dashboard JS -->
+    <script src="{% static 'admin/js/custom_dashboard.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

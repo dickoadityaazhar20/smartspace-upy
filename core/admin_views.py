@@ -6,7 +6,77 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q, Max, Count
-from .models import Message, User, PinnedConversation
+from django.db.models.functions import TruncDate, ExtractWeekDay
+from django.utils import timezone
+from datetime import timedelta
+import json
+from .models import Message, User, PinnedConversation, Booking, Room
+
+
+@staff_member_required
+def custom_dashboard_view(request):
+    """Custom dashboard matching Doct reference design"""
+    # Stats
+    total_bookings = Booking.objects.count()
+    pending_bookings = Booking.objects.filter(status='Pending').count()
+    approved_bookings = Booking.objects.filter(status='Approved').count()
+    active_rooms = Room.objects.filter(is_active=True).count()
+    
+    # Recent bookings
+    recent_bookings = Booking.objects.select_related('user', 'room').order_by('-created_at')[:5]
+    
+    # Chart data - Booking Trend (last 30 days)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    daily_bookings = (
+        Booking.objects.filter(created_at__gte=thirty_days_ago)
+        .annotate(date=TruncDate('created_at'))
+        .values('date')
+        .annotate(count=Count('id'))
+        .order_by('date')
+    )
+    
+    booking_trend_labels = [b['date'].strftime('%d %b') for b in daily_bookings if b['date']]
+    booking_trend_data = [b['count'] for b in daily_bookings]
+    
+    # Status distribution
+    pending = Booking.objects.filter(status='Pending').count()
+    approved = Booking.objects.filter(status='Approved').count()
+    rejected = Booking.objects.filter(status='Rejected').count()
+    
+    # Busiest days
+    day_names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    weekly_bookings = (
+        Booking.objects.annotate(day=ExtractWeekDay('tanggal_mulai'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('day')
+    )
+    busiest_data = {b['day']: b['count'] for b in weekly_bookings}
+    busiest_labels = day_names
+    busiest_counts = [busiest_data.get(i+1, 0) for i in range(7)]
+    
+    context = {
+        'active_page': 'dashboard',
+        'total_bookings': total_bookings,
+        'pending_bookings': pending_bookings,
+        'approved_bookings': approved_bookings,
+        'active_rooms': active_rooms,
+        'recent_bookings': recent_bookings,
+        'pending_count': pending_bookings,
+        
+        # Chart data as JSON
+        'booking_trend_data': json.dumps({
+            'labels': booking_trend_labels,
+            'data': booking_trend_data
+        }),
+        'status_distribution': json.dumps([pending, approved, rejected]),
+        'busiest_days': json.dumps({
+            'labels': busiest_labels,
+            'data': busiest_counts
+        }),
+    }
+    
+    return render(request, 'admin/custom_dashboard/index.html', context)
 
 
 @staff_member_required

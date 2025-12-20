@@ -1,5 +1,7 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.shortcuts import redirect
+from django.urls import reverse
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.decorators import action, display
@@ -166,13 +168,69 @@ def export_bookings_to_pdf(modeladmin, request, queryset):
 # Booking Admin - Enhanced with Unfold
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin):
-    list_display = ('id', 'get_user_npm', 'get_user_name', 'get_user_fakultas', 'get_user_prodi', 'get_user_angkatan', 'room', 'jumlah_tamu', 'get_tanggal_mulai', 'get_created_at', 'get_tanggal_selesai', 'status', 'get_document_link')
+    list_display = ('id', 'get_user_npm', 'get_user_name', 'get_user_fakultas', 'get_user_prodi', 'get_user_angkatan', 'room', 'jumlah_tamu', 'get_tanggal_mulai', 'get_created_at', 'get_tanggal_selesai', 'get_status_badge', 'get_document_link')
     list_filter = ('status', 'tanggal_mulai', 'room__tipe_ruangan', 'user__fakultas', 'created_at')
     search_fields = ('user__npm_nip', 'user__first_name', 'user__last_name', 'room__nomor_ruangan')
     ordering = ('-created_at',)
     date_hierarchy = 'tanggal_mulai'
     list_per_page = 25
     actions = [make_approved, make_rejected, make_pending, make_on_process, export_bookings_to_excel, export_bookings_to_pdf]
+    
+    # Row-level quick actions (appear as dropdown on each row)
+    actions_row = ['quick_approve', 'quick_reject', 'quick_set_pending']
+    
+    # Filter presets - quick filter tabs at top
+    list_filter_presets = [
+        {'name': '📝 Semua', 'params': {}},
+        {'name': '⏳ Pending', 'params': {'status': 'Pending'}},
+        {'name': '✅ Approved', 'params': {'status': 'Approved'}},
+        {'name': '❌ Rejected', 'params': {'status': 'Rejected'}},
+        {'name': '🔄 On Process', 'params': {'status': 'On Process'}},
+    ]
+    
+    # Status badge with colors
+    @display(description="Status", label={
+        "Pending": "warning",
+        "Approved": "success",
+        "Rejected": "danger",
+        "Cancelled": "info",
+        "On Process": "primary"
+    })
+    def get_status_badge(self, obj):
+        return obj.status
+    
+    # Quick Actions - Row Level
+    @action(description="✅ Approve", url_path="quick-approve")
+    def quick_approve(self, request, object_id):
+        booking = Booking.objects.get(pk=object_id)
+        booking.status = 'Approved'
+        booking.save()
+        try:
+            send_booking_approved_email(booking)
+        except Exception:
+            pass
+        messages.success(request, f'Booking #{object_id} approved! Email sent.')
+        return redirect(reverse('admin:core_booking_changelist'))
+    
+    @action(description="❌ Reject", url_path="quick-reject")
+    def quick_reject(self, request, object_id):
+        booking = Booking.objects.get(pk=object_id)
+        booking.status = 'Rejected'
+        booking.save()
+        try:
+            send_booking_rejected_email(booking)
+        except Exception:
+            pass
+        messages.warning(request, f'Booking #{object_id} rejected. Email sent.')
+        return redirect(reverse('admin:core_booking_changelist'))
+    
+    @action(description="⏳ Set Pending", url_path="quick-pending")
+    def quick_set_pending(self, request, object_id):
+        booking = Booking.objects.get(pk=object_id)
+        booking.status = 'Pending'
+        booking.save()
+        messages.info(request, f'Booking #{object_id} set to Pending.')
+        return redirect(reverse('admin:core_booking_changelist'))
     
     # User info display methods
     def get_user_npm(self, obj):
@@ -410,12 +468,17 @@ class ActivityLogAdmin(ModelAdmin):
 # Room Comment Admin - Komentar & Rating Ruangan
 @admin.register(RoomComment)
 class RoomCommentAdmin(ModelAdmin):
-    list_display = ('get_user_name', 'room', 'rating', 'get_comment_preview', 'is_approved', 'created_at')
+    list_display = ('get_user_name', 'room', 'rating', 'get_comment_preview', 'get_approval_badge', 'is_approved', 'created_at')
     list_filter = ('rating', 'is_approved', 'room', 'created_at')
     search_fields = ('user__first_name', 'user__npm_nip', 'room__nomor_ruangan', 'comment')
     ordering = ('-created_at',)
     list_editable = ('is_approved',)
     list_per_page = 25
+    
+    # Approval badge with colors
+    @display(description="Status", label=True)
+    def get_approval_badge(self, obj):
+        return "✅ Approved" if obj.is_approved else "⏳ Pending"
     
     def get_user_name(self, obj):
         return obj.user.get_full_name() or obj.user.username
@@ -443,12 +506,17 @@ class RoomCommentAdmin(ModelAdmin):
 # Room Report Admin - Laporan Ruangan
 @admin.register(RoomReport)
 class RoomReportAdmin(ModelAdmin):
-    list_display = ('room', 'get_reporter_name', 'get_keterangan_preview', 'is_resolved', 'created_at')
+    list_display = ('room', 'get_reporter_name', 'get_keterangan_preview', 'get_resolved_badge', 'is_resolved', 'created_at')
     list_filter = ('is_resolved', 'room', 'created_at')
     search_fields = ('room__nomor_ruangan', 'user__first_name', 'user__npm_nip', 'keterangan')
     ordering = ('-created_at',)
     list_editable = ('is_resolved',)
     list_per_page = 25
+    
+    # Resolved badge with colors
+    @display(description="Status", label=True)
+    def get_resolved_badge(self, obj):
+        return "✅ Selesai" if obj.is_resolved else "🔴 Belum Ditangani"
     
     def get_reporter_name(self, obj):
         if obj.user:
@@ -476,3 +544,4 @@ class RoomReportAdmin(ModelAdmin):
     )
     
     readonly_fields = ('room', 'user', 'keterangan', 'created_at', 'updated_at')
+

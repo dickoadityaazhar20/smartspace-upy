@@ -1,0 +1,220 @@
+{% extends "admin/custom_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="welcome-section">
+    <h1>Welcome, {{ user.get_full_name|default:user.username }} 👋</h1>
+    <p>Here's what's happening with your bookings today.</p>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-cards">
+    <div class="stat-card blue">
+        <div class="stat-icon">
+            <span class="material-icons-outlined">calendar_month</span>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" id="totalBookings">{{ total_bookings }}</span>
+            <span class="stat-label">Total Bookings</span>
+        </div>
+    </div>
+
+    <div class="stat-card pink">
+        <div class="stat-icon">
+            <span class="material-icons-outlined">pending_actions</span>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" id="pendingBookings">{{ pending_bookings }}</span>
+            <span class="stat-label">Pending Requests</span>
+        </div>
+    </div>
+
+    <div class="stat-card green">
+        <div class="stat-icon">
+            <span class="material-icons-outlined">check_circle</span>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" id="approvedBookings">{{ approved_bookings }}</span>
+            <span class="stat-label">Approved</span>
+        </div>
+    </div>
+
+    <div class="stat-card purple">
+        <div class="stat-icon">
+            <span class="material-icons-outlined">meeting_room</span>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" id="activeRooms">{{ active_rooms }}</span>
+            <span class="stat-label">Active Rooms</span>
+        </div>
+    </div>
+</div>
+
+<!-- Export Buttons -->
+<div class="export-buttons">
+    <a href="/smartspace-panel-upy/export/dashboard/excel/" class="btn btn-success">
+        <span class="material-icons-outlined">table_chart</span>
+        Export Excel
+    </a>
+    <a href="/smartspace-panel-upy/export/dashboard/pdf/" class="btn btn-danger">
+        <span class="material-icons-outlined">picture_as_pdf</span>
+        Export PDF
+    </a>
+</div>
+
+<!-- Charts Section -->
+<div class="charts-section">
+    <div class="chart-card full-width">
+        <h3>📊 Booking Trend (Last 30 Days)</h3>
+        <canvas id="bookingTrendChart"></canvas>
+    </div>
+
+    <div class="chart-row">
+        <div class="chart-card">
+            <h3>📈 Status Distribution</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h3>🔥 Busiest Days</h3>
+            <canvas id="busiestDaysChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Bookings -->
+<div class="recent-section">
+    <div class="section-header">
+        <h3>📋 Recent Bookings</h3>
+        <a href="{% url 'admin:core_booking_changelist' %}" class="view-all">View All →</a>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Room</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in recent_bookings %}
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <span class="user-avatar-small">{{ booking.user.first_name|slice:":1" }}</span>
+                            <span>{{ booking.user.get_full_name }}</span>
+                        </div>
+                    </td>
+                    <td>{{ booking.room.nomor_ruangan }}</td>
+                    <td>{{ booking.tanggal_mulai|date:"d M Y, H:i" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ booking.status|lower }}">
+                            {{ booking.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="empty-message">No recent bookings</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart Data from Django
+    const chartData = {
+        bookingTrend: {{ booking_trend_data| safe }},
+    statusDistribution: { { status_distribution | safe } },
+    busiestDays: { { busiest_days | safe } }
+    };
+
+    // Initialize Charts
+    document.addEventListener('DOMContentLoaded', function () {
+        initBookingTrendChart();
+        initStatusChart();
+        initBusiestDaysChart();
+    });
+
+    function initBookingTrendChart() {
+        const ctx = document.getElementById('bookingTrendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.bookingTrend.labels,
+                datasets: [{
+                    label: 'Bookings',
+                    data: chartData.bookingTrend.data,
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function initStatusChart() {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected'],
+                datasets: [{
+                    data: chartData.statusDistribution,
+                    backgroundColor: ['#F59E0B', '#10B981', '#EF4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+
+    function initBusiestDaysChart() {
+        const ctx = document.getElementById('busiestDaysChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.busiestDays.labels,
+                datasets: [{
+                    label: 'Bookings',
+                    data: chartData.busiestDays.data,
+                    backgroundColor: '#8B5CF6'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
