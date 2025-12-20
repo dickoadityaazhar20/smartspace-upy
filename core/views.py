@@ -378,8 +378,8 @@ def api_login(request):
         if not user.check_password(password):
             return JsonResponse({'success': False, 'message': 'Password salah'}, status=401)
         
-        # Login user
-        login(request, user)
+        # Login user (specify backend when multiple backends are configured)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         
         return JsonResponse({
             'success': True,
