@@ -166,7 +166,7 @@ def export_bookings_to_pdf(modeladmin, request, queryset):
 # Booking Admin - Enhanced with Unfold
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin):
-    list_display = ('id', 'get_user_npm', 'get_user_name', 'get_user_fakultas', 'get_user_prodi', 'get_user_angkatan', 'room', 'jumlah_tamu', 'get_tanggal_mulai', 'get_tanggal_selesai', 'status', 'get_document_link')
+    list_display = ('id', 'get_user_npm', 'get_user_name', 'get_user_fakultas', 'get_user_prodi', 'get_user_angkatan', 'room', 'jumlah_tamu', 'get_tanggal_mulai', 'get_created_at', 'get_tanggal_selesai', 'status', 'get_document_link')
     list_filter = ('status', 'tanggal_mulai', 'room__tipe_ruangan', 'user__fakultas', 'created_at')
     search_fields = ('user__npm_nip', 'user__first_name', 'user__last_name', 'room__nomor_ruangan')
     ordering = ('-created_at',)
