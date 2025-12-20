@@ -29,3 +29,6 @@ django-cloudinary-storage>=0.3.0
 # Export Reports
 openpyxl>=3.1.0
 reportlab>=4.0.0
+
+# Security - Rate Limiting
+django-axes>=7.0.0

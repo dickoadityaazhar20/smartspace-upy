@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary',
     'cloudinary_storage',
+    'axes',  # Rate limiting for login
     'core',
 ]
 
@@ -141,7 +142,7 @@ UNFOLD = {
                     {
                         "title": "Chat User",
                         "icon": "chat",
-                        "link": "/admin/chat/",
+                        "link": "/smartspace-panel-upy/chat/",
                     },
                     {
                         "title": "Kritik & Saran",
@@ -190,7 +191,7 @@ UNFOLD = {
                     {
                         "title": "Admin Shortcut",
                         "icon": "keyboard",
-                        "link": "/admin/shortcuts/",
+                        "link": "/smartspace-panel-upy/shortcuts/",
                     },
                 ],
             },
@@ -210,6 +211,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',  # Rate limiting for login
+    'core.middleware.AdminAccessMiddleware',  # Redirect non-admin users
 ]
 
 ROOT_URLCONF = 'smartspaceupy.urls'
@@ -352,3 +355,18 @@ EMAIL_FROM_NAME = 'SmartSpace UPY'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session berakhir saat browser ditutup
 SESSION_COOKIE_AGE = 86400  # 24 jam (fallback jika browser tidak ditutup)
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session setiap request
+
+# Authentication Backends (required for django-axes)
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Django Axes Configuration (Rate Limiting for Login)
+AXES_FAILURE_LIMIT = 5  # Lock after 5 failed attempts
+AXES_COOLOFF_TIME = 0.5  # Lock for 30 minutes (0.5 hours)
+AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
+AXES_LOCKOUT_PARAMETERS = ['ip_address']  # Lock by IP only
+
+# Custom Admin URL (used by middleware)
+ADMIN_URL = 'smartspace-panel-upy/'

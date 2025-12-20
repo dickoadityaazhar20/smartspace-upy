@@ -54,7 +54,7 @@ def custom_admin_urls():
 admin.site.get_urls = custom_admin_urls
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('smartspace-panel-upy/', admin.site.urls),
     path('', include('core.urls')),
 ]
 
