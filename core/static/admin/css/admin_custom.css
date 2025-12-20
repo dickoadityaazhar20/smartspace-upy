@@ -1,0 +1,224 @@
+/**
+ * SmartSpace UPY - Admin Custom Styles
+ * Modern dark/light theme with blue accent
+ */
+
+/* ============================================
+   CUSTOM VARIABLES FOR THEME
+   ============================================ */
+:root {
+    --ss-primary: #3B82F6;
+    --ss-primary-dark: #2563EB;
+    --ss-primary-light: #60A5FA;
+    --ss-success: #10B981;
+    --ss-warning: #F59E0B;
+    --ss-danger: #EF4444;
+    --ss-info: #8B5CF6;
+    --ss-gradient-blue: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    --ss-gradient-green: linear-gradient(135deg, #10B981, #059669);
+    --ss-gradient-orange: linear-gradient(135deg, #F59E0B, #D97706);
+    --ss-gradient-purple: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    --ss-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --ss-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   SIDEBAR ENHANCEMENTS
+   ============================================ */
+/* Sidebar active item highlight */
+nav[aria-label="primary-navigation"] a[aria-current="page"] {
+    background: var(--ss-gradient-blue) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    box-shadow: var(--ss-shadow);
+}
+
+nav[aria-label="primary-navigation"] a:hover {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+}
+
+/* ============================================
+   TABLE ENHANCEMENTS
+   ============================================ */
+/* Smoother table rows */
+.django-tables2 tbody tr,
+table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.django-tables2 tbody tr:hover,
+table tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--ss-shadow);
+}
+
+/* Status badges enhanced */
+.bg-green-100 { background: var(--ss-gradient-green) !important; color: white !important; }
+.bg-red-100 { background: var(--ss-danger) !important; color: white !important; }
+.bg-yellow-100 { background: var(--ss-gradient-orange) !important; color: white !important; }
+.bg-blue-100 { background: var(--ss-gradient-blue) !important; color: white !important; }
+
+/* ============================================
+   BUTTONS ENHANCEMENT
+   ============================================ */
+button[type="submit"],
+.btn-primary,
+input[type="submit"] {
+    background: var(--ss-gradient-blue) !important;
+    border: none !important;
+    box-shadow: var(--ss-shadow);
+    transition: all 0.3s ease;
+}
+
+button[type="submit"]:hover,
+.btn-primary:hover,
+input[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ss-shadow-lg);
+}
+
+/* ============================================
+   CARDS & PANELS ENHANCEMENT
+   ============================================ */
+.rounded-lg,
+.card,
+[class*="rounded"] {
+    transition: all 0.3s ease;
+}
+
+/* ============================================
+   FORM INPUTS ENHANCEMENT
+   ============================================ */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+    transition: all 0.2s ease;
+    border-radius: 8px !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+    border-color: var(--ss-primary) !important;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+main > * {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ============================================
+   SCROLLBAR STYLING (Dark Theme)
+   ============================================ */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--ss-primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--ss-primary-dark);
+}
+
+/* ============================================
+   RESPONSIVE IMPROVEMENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .container,
+    main {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================
+   HEADER ENHANCEMENT
+   ============================================ */
+header {
+    backdrop-filter: blur(10px);
+}
+
+/* ============================================
+   LOADING SPINNER
+   ============================================ */
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+/* ============================================
+   DARK MODE SPECIFIC ENHANCEMENTS
+   ============================================ */
+.dark {
+    --ss-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --ss-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Glowing effect for primary elements in dark mode */
+.dark button[type="submit"]:hover,
+.dark .btn-primary:hover,
+.dark input[type="submit"]:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+/* ============================================
+   STAT CARDS (Dashboard)
+   ============================================ */
+.stat-card {
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: white;
+    box-shadow: var(--ss-shadow-lg);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+
+.stat-card.blue { background: var(--ss-gradient-blue); }
+.stat-card.green { background: var(--ss-gradient-green); }
+.stat-card.orange { background: var(--ss-gradient-orange); }
+.stat-card.purple { background: var(--ss-gradient-purple); }
+
+/* ============================================
+   NOTIFICATION BADGES
+   ============================================ */
+.notification-badge {
+    background: var(--ss-danger);
+    color: white;
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}

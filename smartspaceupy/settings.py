@@ -197,6 +197,9 @@ UNFOLD = {
             },
         ],
     },
+    "STYLES": [
+        lambda request: static("admin/css/admin_custom.css"),
+    ],
     "SCRIPTS": [
         lambda request: static("admin/js/admin_shortcuts.js"),
     ],
