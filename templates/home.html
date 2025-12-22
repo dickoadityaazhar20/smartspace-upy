@@ -124,7 +124,7 @@
                         {% for room in rooms|slice:":6" %}
                         <!-- Slide {{ forloop.counter }} -->
                         <div class="carousel-3d-card {% if forloop.first %}active{% endif %}"
-                            data-index="{{ forloop.counter0 }}">
+                            data-index="{{ forloop.counter0 }}" data-room-id="{{ room.pk }}">
                             <div class="carousel-3d-card-inner">
                                 {% if room.get_foto_url %}
                                 <img src="{{ room.get_foto_url }}" alt="{{ room.nomor_ruangan }}"
@@ -369,6 +369,32 @@
         transform: translateX(0) translateZ(0) rotateY(0deg) scale(1);
         opacity: 1;
         pointer-events: auto;
+        cursor: pointer;
+    }
+
+    /* Clickable active card tooltip */
+    .carousel-3d-card.active .carousel-3d-card-inner::after {
+        content: 'Klik untuk lihat detail';
+        position: absolute;
+        bottom: 85px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        white-space: nowrap;
+        z-index: 20;
+        backdrop-filter: blur(4px);
+    }
+
+    .carousel-3d-card.active:hover .carousel-3d-card-inner::after {
+        opacity: 1;
     }
 
     .carousel-3d-card.prev {
@@ -702,13 +728,38 @@
             dot.addEventListener('click', () => goToSlide(index));
         });
 
-        // Click on prev/next cards to navigate
+        // Click on cards to navigate or scroll to room
         cards.forEach((card) => {
             card.addEventListener('click', function () {
                 if (this.classList.contains('prev')) {
                     prevSlide();
                 } else if (this.classList.contains('next')) {
                     nextSlide();
+                } else if (this.classList.contains('active')) {
+                    // Active card clicked - scroll to corresponding room card
+                    const roomId = this.getAttribute('data-room-id');
+                    if (roomId) {
+                        const roomCard = document.getElementById('room-' + roomId);
+                        if (roomCard) {
+                            // Smooth scroll to room card with offset for navbar
+                            const navbarHeight = 80;
+                            const roomCardTop = roomCard.getBoundingClientRect().top + window.pageYOffset - navbarHeight - 20;
+
+                            window.scrollTo({
+                                top: roomCardTop,
+                                behavior: 'smooth'
+                            });
+
+                            // Add highlight animation to the room card
+                            roomCard.classList.add('ring-4', 'ring-primary', 'ring-offset-2');
+                            roomCard.style.transition = 'all 0.3s ease';
+
+                            // Remove highlight after 2 seconds
+                            setTimeout(() => {
+                                roomCard.classList.remove('ring-4', 'ring-primary', 'ring-offset-2');
+                            }, 2000);
+                        }
+                    }
                 }
             });
         });
@@ -817,7 +868,7 @@
     {% if rooms %}
     <div id="roomGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for room in rooms|slice:":12" %}
-        <div data-room-id="{{ room.pk }}" data-room-name="{{ room.nomor_ruangan|escapejs }}"
+        <div id="room-{{ room.pk }}" data-room-id="{{ room.pk }}" data-room-name="{{ room.nomor_ruangan|escapejs }}"
             data-room-type="{{ room.tipe_ruangan|lower }}"
             data-room-facilities="{% for f in room.fasilitas_list %}{{ f|lower }}{% if not forloop.last %},{% endif %}{% endfor %}"
             class="room-card bg-white rounded-2xl overflow-hidden cursor-pointer group block transform transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 border border-gray-100 hover:border-primary/30">
