@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.db import IntegrityError
 from django.utils import timezone
 from .models import Room, Booking, User, RoomComment, RoomReport
 from .email_utils import send_welcome_email, send_booking_submitted_email
@@ -304,6 +305,10 @@ def api_register(request):
         if User.objects.filter(npm_nip=data['npm_nip']).exists():
             return JsonResponse({'success': False, 'message': 'NPM/NIP sudah terdaftar'}, status=400)
         
+        # Check if username (NPM/NIP) already exists
+        if User.objects.filter(username=data['npm_nip']).exists():
+            return JsonResponse({'success': False, 'message': 'NPM/NIP sudah terdaftar'}, status=400)
+        
         # Check if email already exists
         if User.objects.filter(email=data['email']).exists():
             return JsonResponse({'success': False, 'message': 'Email sudah terdaftar'}, status=400)
@@ -349,8 +354,18 @@ def api_register(request):
         
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except IntegrityError as e:
+        # Handle database integrity errors (duplicate key, etc.)
+        error_msg = str(e).lower()
+        if 'username' in error_msg or 'npm_nip' in error_msg:
+            return JsonResponse({'success': False, 'message': 'NPM/NIP sudah terdaftar'}, status=400)
+        elif 'email' in error_msg:
+            return JsonResponse({'success': False, 'message': 'Email sudah terdaftar'}, status=400)
+        else:
+            return JsonResponse({'success': False, 'message': 'Data sudah terdaftar'}, status=400)
     except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+        print(f"Registration error: {str(e)}")  # Log for debugging
+        return JsonResponse({'success': False, 'message': 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'}, status=500)
 
 
 @csrf_exempt
