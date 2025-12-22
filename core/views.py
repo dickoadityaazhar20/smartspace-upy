@@ -1129,7 +1129,7 @@ def api_calendar_bookings(request, room_id):
             'end_time': local_end.strftime('%H:%M'),
             'start_datetime': booking.tanggal_mulai.isoformat(),
             'end_datetime': booking.tanggal_selesai.isoformat(),
-            'title': booking.keperluan[:50] if booking.keperluan else 'Tersedia',
+            'title': booking.keperluan[:50] if booking.keperluan else 'Terbooking',
             'user': booking.user.get_full_name() or booking.user.username,
             'status': booking.status
         })
@@ -1185,7 +1185,7 @@ def api_booked_slots(request, room_id, date_str):
         slots.append({
             'start_time': local_start.strftime('%H:%M'),
             'end_time': local_end.strftime('%H:%M'),
-            'title': booking.keperluan[:30] if booking.keperluan else 'Booked'
+            'title': booking.keperluan[:30] if booking.keperluan else 'Terbooking'
         })
     
     # Calculate aggregated range for calendar display
