@@ -323,8 +323,8 @@ def api_register(request):
             role=role  # Use status as role
         )
         
-        # Auto login after register
-        login(request, user)
+        # Auto login after register (specify backend when multiple backends are configured)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         
         # Send welcome email (async, don't block response)
         try:
