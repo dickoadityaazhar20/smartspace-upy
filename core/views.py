@@ -1062,9 +1062,17 @@ def api_booking_cancel(request):
 # ============================================
 @csrf_exempt
 def api_chat(request):
-    """API endpoint for AI chatbot"""
+    """API endpoint for AI chatbot - requires login"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    # Require authentication
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False, 
+            'message': 'Silakan login terlebih dahulu untuk menggunakan chatbot',
+            'response': 'Silakan login terlebih dahulu untuk menggunakan SmartBot. 🔐'
+        }, status=401)
     
     try:
         data = json.loads(request.body)
