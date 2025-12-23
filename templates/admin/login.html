@@ -477,7 +477,7 @@
         {% endif %}
 
         <!-- Login Form -->
-        <form method="post" action="{% url 'admin:login' %}">
+        <form method="post" action="">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
 
