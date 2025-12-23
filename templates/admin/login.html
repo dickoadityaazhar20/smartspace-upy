@@ -162,13 +162,363 @@
             }
         }
 
+        /* TWINKLING STARS */
+        .stars {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Star positions - generate 30 stars */
+        .star:nth-child(1) {
+            left: 5%;
+            top: 10%;
+            --duration: 2s;
+            animation-delay: 0s;
+        }
+
+        .star:nth-child(2) {
+            left: 15%;
+            top: 25%;
+            --duration: 3s;
+            animation-delay: 0.5s;
+        }
+
+        .star:nth-child(3) {
+            left: 25%;
+            top: 5%;
+            --duration: 2.5s;
+            animation-delay: 1s;
+        }
+
+        .star:nth-child(4) {
+            left: 35%;
+            top: 40%;
+            --duration: 1.8s;
+            animation-delay: 0.3s;
+        }
+
+        .star:nth-child(5) {
+            left: 45%;
+            top: 15%;
+            --duration: 2.2s;
+            animation-delay: 1.5s;
+        }
+
+        .star:nth-child(6) {
+            left: 55%;
+            top: 30%;
+            --duration: 3.2s;
+            animation-delay: 0.8s;
+        }
+
+        .star:nth-child(7) {
+            left: 65%;
+            top: 8%;
+            --duration: 2.8s;
+            animation-delay: 2s;
+        }
+
+        .star:nth-child(8) {
+            left: 75%;
+            top: 45%;
+            --duration: 1.5s;
+            animation-delay: 0.2s;
+        }
+
+        .star:nth-child(9) {
+            left: 85%;
+            top: 20%;
+            --duration: 2.6s;
+            animation-delay: 1.2s;
+        }
+
+        .star:nth-child(10) {
+            left: 95%;
+            top: 35%;
+            --duration: 3s;
+            animation-delay: 0.7s;
+        }
+
+        .star:nth-child(11) {
+            left: 8%;
+            top: 55%;
+            --duration: 2.3s;
+            animation-delay: 1.8s;
+        }
+
+        .star:nth-child(12) {
+            left: 18%;
+            top: 70%;
+            --duration: 1.9s;
+            animation-delay: 0.4s;
+        }
+
+        .star:nth-child(13) {
+            left: 28%;
+            top: 85%;
+            --duration: 2.7s;
+            animation-delay: 1.1s;
+        }
+
+        .star:nth-child(14) {
+            left: 38%;
+            top: 60%;
+            --duration: 3.1s;
+            animation-delay: 0.6s;
+        }
+
+        .star:nth-child(15) {
+            left: 48%;
+            top: 75%;
+            --duration: 2.1s;
+            animation-delay: 1.4s;
+        }
+
+        .star:nth-child(16) {
+            left: 58%;
+            top: 90%;
+            --duration: 1.7s;
+            animation-delay: 0.9s;
+        }
+
+        .star:nth-child(17) {
+            left: 68%;
+            top: 65%;
+            --duration: 2.4s;
+            animation-delay: 1.6s;
+        }
+
+        .star:nth-child(18) {
+            left: 78%;
+            top: 80%;
+            --duration: 2.9s;
+            animation-delay: 0.1s;
+        }
+
+        .star:nth-child(19) {
+            left: 88%;
+            top: 50%;
+            --duration: 1.6s;
+            animation-delay: 1.3s;
+        }
+
+        .star:nth-child(20) {
+            left: 92%;
+            top: 70%;
+            --duration: 2s;
+            animation-delay: 0.5s;
+        }
+
+        .star:nth-child(21) {
+            left: 3%;
+            top: 88%;
+            --duration: 2.5s;
+            animation-delay: 1.7s;
+        }
+
+        .star:nth-child(22) {
+            left: 22%;
+            top: 42%;
+            --duration: 3.3s;
+            animation-delay: 0.2s;
+        }
+
+        .star:nth-child(23) {
+            left: 42%;
+            top: 52%;
+            --duration: 1.8s;
+            animation-delay: 1.9s;
+        }
+
+        .star:nth-child(24) {
+            left: 62%;
+            top: 48%;
+            --duration: 2.2s;
+            animation-delay: 0.4s;
+        }
+
+        .star:nth-child(25) {
+            left: 82%;
+            top: 12%;
+            --duration: 2.8s;
+            animation-delay: 1s;
+        }
+
+        /* SHOOTING STARS */
+        .shooting-stars {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, #fff, transparent);
+            border-radius: 50%;
+            opacity: 0;
+            transform: rotate(-45deg);
+            animation: shoot 8s ease-in-out infinite;
+        }
+
+        .shooting-star:nth-child(1) {
+            top: 10%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .shooting-star:nth-child(2) {
+            top: 30%;
+            left: 60%;
+            animation-delay: 3s;
+        }
+
+        .shooting-star:nth-child(3) {
+            top: 50%;
+            left: 40%;
+            animation-delay: 6s;
+        }
+
+        .shooting-star:nth-child(4) {
+            top: 20%;
+            left: 80%;
+            animation-delay: 4s;
+        }
+
+        .shooting-star:nth-child(5) {
+            top: 70%;
+            left: 10%;
+            animation-delay: 7s;
+        }
+
+        @keyframes shoot {
+            0% {
+                opacity: 0;
+                transform: rotate(-45deg) translateX(0);
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            15% {
+                opacity: 0;
+                transform: rotate(-45deg) translateX(300px);
+            }
+
+            100% {
+                opacity: 0;
+                transform: rotate(-45deg) translateX(300px);
+            }
+        }
+
+        /* NEBULA CLOUDS */
+        .nebula {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            opacity: 0.4;
+        }
+
+        .nebula::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            top: -20%;
+            left: -10%;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+            animation: nebulaDrift 30s ease-in-out infinite;
+        }
+
+        .nebula::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            bottom: -15%;
+            right: -5%;
+            background: radial-gradient(ellipse, rgba(59, 130, 246, 0.25) 0%, transparent 70%);
+            animation: nebulaDrift 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes nebulaDrift {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(50px, 30px) scale(1.1);
+            }
+        }
+
+        /* AURORA EFFECT */
+        .aurora {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            z-index: -2;
+            background: linear-gradient(180deg,
+                    rgba(16, 185, 129, 0.1) 0%,
+                    rgba(59, 130, 246, 0.08) 30%,
+                    rgba(139, 92, 246, 0.05) 60%,
+                    transparent 100%);
+            animation: auroraWave 10s ease-in-out infinite;
+            filter: blur(40px);
+        }
+
+        @keyframes auroraWave {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: translateY(-20px) scaleY(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: translateY(0) scaleY(1.2);
+            }
+        }
+
         /* MESH GRADIENT OVERLAY */
         .mesh-overlay {
             position: fixed;
             inset: 0;
             z-index: -1;
             background:
-                radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
             animation: meshPulse 8s ease-in-out infinite alternate;
@@ -385,6 +735,50 @@
         <div class="particle"></div>
         <div class="particle"></div>
     </div>
+
+    <!-- Twinkling Stars -->
+    <div class="stars">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+
+    <!-- Shooting Stars -->
+    <div class="shooting-stars">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <!-- Nebula Clouds -->
+    <div class="nebula"></div>
+
+    <!-- Aurora Effect -->
+    <div class="aurora"></div>
 
     <!-- Mesh Gradient Overlay -->
     <div class="mesh-overlay"></div>
