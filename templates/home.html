@@ -891,7 +891,7 @@
 
     <!-- Room Grid -->
     {% if rooms %}
-    <div id="roomGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div id="roomGrid" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {% for room in rooms|slice:":12" %}
         <div id="room-{{ room.pk }}" data-room-id="{{ room.pk }}" data-room-name="{{ room.nomor_ruangan|escapejs }}"
             data-room-type="{{ room.tipe_ruangan|lower }}"
@@ -954,9 +954,10 @@
             </div>
 
             <!-- Room Info -->
-            <div class="p-4">
+            <div class="p-3 sm:p-4">
                 <div class="flex items-start justify-between mb-2">
-                    <h3 class="text-base font-semibold text-gray-900 line-clamp-1">{{ room.nomor_ruangan }}</h3>
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-1">{{ room.nomor_ruangan }}
+                    </h3>
                     <div class="flex items-center text-sm ml-2 shrink-0">
                         <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path
@@ -991,9 +992,10 @@
                     </span>
                 </p>
 
-                <!-- Facilities Preview -->
+                <!-- Facilities Preview (hidden on mobile) -->
                 {% if room.fasilitas_list %}
-                <div class="flex flex-wrap gap-1 mb-3" data-fasilitas-count="{{ room.fasilitas_list|length }}">
+                <div class="hidden sm:flex flex-wrap gap-1 mb-3"
+                    data-fasilitas-count="{{ room.fasilitas_list|length }}">
                     {% for fasilitas in room.fasilitas_list|slice:":3" %}
                     <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{{ fasilitas }}</span>
                     {% endfor %}
@@ -1006,7 +1008,7 @@
                         <span class="text-sm text-gray-500"> / sesi</span>
                     </div>
                     <span
-                        class="px-4 py-2 bg-primary/10 text-primary text-xs font-semibold rounded-full group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30 transition-all duration-300 flex items-center gap-1">
+                        class="hidden sm:flex px-4 py-2 bg-primary/10 text-primary text-xs font-semibold rounded-full group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30 transition-all duration-300 items-center gap-1">
                         <span>Lihat Detail</span>
                         <svg class="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
