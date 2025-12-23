@@ -369,114 +369,155 @@
             animation-delay: 1s;
         }
 
-        /* SHOOTING STARS */
+        /* SHOOTING STARS - Realistic Meteor Effect */
         .shooting-stars {
             position: fixed;
             inset: 0;
             z-index: -2;
             overflow: hidden;
+            pointer-events: none;
         }
 
         .shooting-star {
             position: absolute;
-            width: 150px;
-            height: 3px;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.5) 30%, transparent);
-            border-radius: 2px;
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.1) 30%,
+                    rgba(255, 255, 255, 0.4) 60%,
+                    rgba(255, 255, 255, 0.8) 85%,
+                    rgba(255, 255, 255, 1) 100%);
+            border-radius: 100px;
             opacity: 0;
-            transform: rotate(45deg);
-            animation: shoot 12s ease-in-out infinite;
-            box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+            transform: rotate(35deg);
+            animation: shootingStar linear infinite;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+        }
+
+        /* Bright glowing head of the meteor */
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #fff 0%, rgba(200, 220, 255, 0.8) 40%, transparent 70%);
+            border-radius: 50%;
+            box-shadow:
+                0 0 10px 4px rgba(255, 255, 255, 0.9),
+                0 0 20px 8px rgba(200, 220, 255, 0.6),
+                0 0 40px 12px rgba(150, 180, 255, 0.3);
+        }
+
+        /* Secondary trail glow */
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(200, 220, 255, 0.3) 60%, rgba(255, 255, 255, 0.5) 100%);
+            border-radius: 100px;
+            filter: blur(2px);
         }
 
         .shooting-star:nth-child(1) {
-            top: -5%;
-            left: 10%;
+            top: -10%;
+            left: 5%;
             animation-delay: 0s;
-            animation-duration: 12s;
+            animation-duration: 2.5s;
         }
 
         .shooting-star:nth-child(2) {
-            top: -5%;
-            left: 30%;
-            animation-delay: 2s;
-            animation-duration: 14s;
+            top: -10%;
+            left: 25%;
+            animation-delay: 4s;
+            animation-duration: 2.8s;
         }
 
         .shooting-star:nth-child(3) {
-            top: -5%;
-            left: 50%;
-            animation-delay: 4s;
-            animation-duration: 11s;
+            top: -10%;
+            left: 45%;
+            animation-delay: 8s;
+            animation-duration: 2.2s;
         }
 
         .shooting-star:nth-child(4) {
-            top: -5%;
-            left: 70%;
-            animation-delay: 6s;
-            animation-duration: 15s;
+            top: -10%;
+            left: 65%;
+            animation-delay: 3s;
+            animation-duration: 2.6s;
         }
 
         .shooting-star:nth-child(5) {
-            top: -5%;
+            top: -10%;
             left: 85%;
-            animation-delay: 8s;
-            animation-duration: 13s;
+            animation-delay: 10s;
+            animation-duration: 2.4s;
         }
 
         .shooting-star:nth-child(6) {
-            top: -5%;
-            left: 20%;
-            animation-delay: 5s;
-            animation-duration: 12s;
+            top: -10%;
+            left: 15%;
+            animation-delay: 6s;
+            animation-duration: 3s;
         }
 
         .shooting-star:nth-child(7) {
-            top: -5%;
-            left: 45%;
-            animation-delay: 9s;
-            animation-duration: 14s;
+            top: -10%;
+            left: 35%;
+            animation-delay: 12s;
+            animation-duration: 2.3s;
         }
 
         .shooting-star:nth-child(8) {
-            top: -5%;
-            left: 65%;
-            animation-delay: 3s;
-            animation-duration: 11s;
+            top: -10%;
+            left: 55%;
+            animation-delay: 1.5s;
+            animation-duration: 2.7s;
         }
 
         .shooting-star:nth-child(9) {
-            top: -5%;
-            left: 5%;
+            top: -10%;
+            left: 75%;
             animation-delay: 7s;
-            animation-duration: 15s;
+            animation-duration: 2.5s;
         }
 
         .shooting-star:nth-child(10) {
-            top: -5%;
-            left: 90%;
-            animation-delay: 1s;
-            animation-duration: 13s;
+            top: -10%;
+            left: 95%;
+            animation-delay: 5s;
+            animation-duration: 2.9s;
         }
 
-        @keyframes shoot {
+        @keyframes shootingStar {
             0% {
                 opacity: 0;
-                transform: rotate(45deg) translate(0, 0);
+                transform: rotate(35deg) translate(0, 0);
             }
 
-            3% {
+            2% {
                 opacity: 1;
             }
 
-            15% {
+            20% {
+                opacity: 0.8;
+            }
+
+            40% {
                 opacity: 0;
-                transform: rotate(45deg) translate(400px, 400px);
+                transform: rotate(35deg) translate(calc(100vw * 0.7), calc(100vh * 0.7));
             }
 
             100% {
                 opacity: 0;
-                transform: rotate(45deg) translate(400px, 400px);
+                transform: rotate(35deg) translate(calc(100vw * 0.7), calc(100vh * 0.7));
             }
         }
 
