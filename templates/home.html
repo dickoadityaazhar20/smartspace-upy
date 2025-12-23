@@ -1845,12 +1845,13 @@
             </button>
         </div>
 
-        <!-- Dot Indicators -->
+        <!-- Dot Indicators - Same style as Hero -->
         <div class="flex justify-center gap-3 mt-10" id="testimonialDotsContainer">
             {% for testimonial in testimonials %}
-            <button
-                class="testimonial-dot {% if forloop.first %}w-4 h-4 bg-primary{% else %}w-3 h-3 bg-white/30 hover:bg-white/50{% endif %} rounded-full transition-all duration-300"
-                data-index="{{ forloop.counter0 }}"></button>
+            <button class="carousel-3d-dot testimonial-dot {% if forloop.first %}active{% endif %}"
+                data-index="{{ forloop.counter0 }}">
+                <span class="dot-inner"></span>
+            </button>
             {% endfor %}
         </div>
 
@@ -2780,14 +2781,12 @@
             const slideWidth = 100 / slidesPerView;
             testimonialTrack.style.transform = `translateX(-${testimonialCurrentIndex * slideWidth}%)`;
 
-            // Update dots
+            // Update dots - using same active class system as hero carousel
             testimonialDots.forEach((dot, index) => {
                 if (index === testimonialCurrentIndex) {
-                    dot.classList.remove('w-3', 'h-3', 'bg-white/30');
-                    dot.classList.add('w-4', 'h-4', 'bg-primary');
+                    dot.classList.add('active');
                 } else {
-                    dot.classList.remove('w-4', 'h-4', 'bg-primary');
-                    dot.classList.add('w-3', 'h-3', 'bg-white/30');
+                    dot.classList.remove('active');
                 }
             });
         }
@@ -2805,7 +2804,7 @@
         }
 
         function startTestimonialAutoSlide() {
-            testimonialAutoSlideInterval = setInterval(nextTestimonialSlide, 5000);
+            testimonialAutoSlideInterval = setInterval(nextTestimonialSlide, 3500);
         }
 
         function stopTestimonialAutoSlide() {
