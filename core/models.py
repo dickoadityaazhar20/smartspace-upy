@@ -58,8 +58,14 @@ class Room(models.Model):
     
     class TipeRuangan(models.TextChoices):
         KELAS = 'Kelas', 'Kelas'
-        LAB = 'Lab', 'Lab'
+        LAB = 'Lab', 'Laboratorium'
         AULA = 'Aula', 'Aula'
+        STUDIO = 'Studio', 'Studio'
+        MEETING = 'Meeting', 'Ruang Meeting'
+        PERPUSTAKAAN = 'Perpustakaan', 'Perpustakaan'
+        KANTOR = 'Kantor', 'Kantor'
+        LAPANGAN = 'Lapangan', 'Lapangan'
+        COWORKING = 'Co-Working', 'Co-Working Space'
     
     class RoomStatus(models.TextChoices):
         AVAILABLE = 'available', 'Tersedia'

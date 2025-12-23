@@ -116,8 +116,22 @@
                                 🏫
                                 {% elif room.tipe_ruangan == 'Lab' %}
                                 🔬
-                                {% else %}
+                                {% elif room.tipe_ruangan == 'Aula' %}
                                 🎭
+                                {% elif room.tipe_ruangan == 'Studio' %}
+                                🎬
+                                {% elif room.tipe_ruangan == 'Meeting' %}
+                                📋
+                                {% elif room.tipe_ruangan == 'Perpustakaan' %}
+                                📚
+                                {% elif room.tipe_ruangan == 'Kantor' %}
+                                🏢
+                                {% elif room.tipe_ruangan == 'Lapangan' %}
+                                ⚽
+                                {% elif room.tipe_ruangan == 'Co-Working' %}
+                                💻
+                                {% else %}
+                                🏠
                                 {% endif %}
                                 {{ room.get_tipe_ruangan_display }}
                             </span>
