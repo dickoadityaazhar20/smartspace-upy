@@ -39,14 +39,15 @@
     </div>
     {% endif %}
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content Grid - Flex for mobile ordering -->
+    <div class="flex flex-col lg:grid lg:grid-cols-3 gap-8">
 
-        <!-- Left Column: Room Info -->
-        <div class="lg:col-span-2 space-y-8">
+        <!-- Left Column: Room Info - uses contents for mobile flex ordering -->
+        <div class="contents lg:block lg:col-span-2 lg:space-y-8">
 
             <!-- Room Image -->
-            <div class="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-lg">
+            <div
+                class="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-lg order-1 lg:order-none mb-8 lg:mb-0">
                 {% if room.get_foto_url %}
                 <img src="{{ room.get_foto_url }}" alt="{{ room.nomor_ruangan }}" class="w-full h-full object-cover">
                 {% else %}
@@ -105,7 +106,7 @@
             </div>
 
             <!-- Room Title & Basic Info -->
-            <div class="border-b border-gray-200 pb-6">
+            <div class="border-b border-gray-200 pb-6 order-2 lg:order-none mb-8 lg:mb-0">
                 <div class="flex items-start justify-between">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ room.nomor_ruangan }}</h1>
@@ -146,7 +147,7 @@
             </div>
 
             <!-- Facilities Section -->
-            <div class="border-b border-gray-200 pb-6">
+            <div class="border-b border-gray-200 pb-6 order-3 lg:order-none mb-8 lg:mb-0">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Fasilitas Ruangan</h2>
                 {% if room.fasilitas_list %}
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -168,7 +169,7 @@
             </div>
 
             <!-- Description Section -->
-            <div class="border-b border-gray-200 pb-6">
+            <div class="border-b border-gray-200 pb-6 order-4 lg:order-none mb-8 lg:mb-0">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Tentang Ruangan Ini</h2>
                 <div class="prose prose-gray max-w-none">
                     {% if room.deskripsi %}
@@ -197,7 +198,7 @@
             </div>
 
             <!-- Rules Section -->
-            <div>
+            <div class="order-5 lg:order-none mb-8 lg:mb-0">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Peraturan Penggunaan</h2>
 
                 {% if room.peraturan_list or room.larangan_list %}
@@ -289,7 +290,7 @@
             </div>
 
             <!-- Calendar Section -->
-            <div class="border-t border-gray-200 pt-6 mt-6">
+            <div class="border-t border-gray-200 pt-6 mt-6 order-7 lg:order-none mb-8 lg:mb-0">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-semibold text-gray-900">Jadwal Pemakaian Ruangan</h2>
                     <div class="flex items-center space-x-2">
@@ -357,7 +358,7 @@
             </div>
 
             <!-- Reviews & Comments Section -->
-            <div class="border-t border-gray-200 pt-6 mt-6">
+            <div class="border-t border-gray-200 pt-6 mt-6 order-8 lg:order-none">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-semibold text-gray-900">Ulasan & Komentar</h2>
                     <div class="flex items-center bg-gray-100 px-3 py-2 rounded-lg">
@@ -422,8 +423,8 @@
         </div>
 
 
-        <!-- Right Column: Booking Card (Sticky) -->
-        <div class="lg:col-span-1">
+        <!-- Right Column: Booking Card (Sticky) - Order 6 on mobile (after Rules, before Calendar) -->
+        <div class="lg:col-span-1 order-6 lg:order-none">
             <div class="sticky top-24">
                 <div class="bg-white border border-gray-200 rounded-2xl shadow-xl p-6">
                     <!-- Price Header -->
