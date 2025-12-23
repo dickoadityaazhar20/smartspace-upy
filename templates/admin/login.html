@@ -430,70 +430,70 @@
             top: -10%;
             left: 5%;
             animation-delay: 0s;
-            animation-duration: 2.5s;
+            animation-duration: 4.5s;
         }
 
         .shooting-star:nth-child(2) {
             top: -10%;
             left: 25%;
-            animation-delay: 4s;
-            animation-duration: 2.8s;
+            animation-delay: 8s;
+            animation-duration: 5s;
         }
 
         .shooting-star:nth-child(3) {
             top: -10%;
             left: 45%;
-            animation-delay: 8s;
-            animation-duration: 2.2s;
+            animation-delay: 18s;
+            animation-duration: 4s;
         }
 
         .shooting-star:nth-child(4) {
             top: -10%;
             left: 65%;
-            animation-delay: 3s;
-            animation-duration: 2.6s;
+            animation-delay: 28s;
+            animation-duration: 5.5s;
         }
 
         .shooting-star:nth-child(5) {
             top: -10%;
             left: 85%;
-            animation-delay: 10s;
-            animation-duration: 2.4s;
+            animation-delay: 38s;
+            animation-duration: 4.2s;
         }
 
         .shooting-star:nth-child(6) {
             top: -10%;
             left: 15%;
-            animation-delay: 6s;
-            animation-duration: 3s;
+            animation-delay: 12s;
+            animation-duration: 4.8s;
         }
 
         .shooting-star:nth-child(7) {
             top: -10%;
             left: 35%;
-            animation-delay: 12s;
-            animation-duration: 2.3s;
+            animation-delay: 25s;
+            animation-duration: 4.3s;
         }
 
         .shooting-star:nth-child(8) {
             top: -10%;
             left: 55%;
-            animation-delay: 1.5s;
-            animation-duration: 2.7s;
+            animation-delay: 35s;
+            animation-duration: 5.2s;
         }
 
         .shooting-star:nth-child(9) {
             top: -10%;
             left: 75%;
-            animation-delay: 7s;
-            animation-duration: 2.5s;
+            animation-delay: 45s;
+            animation-duration: 4.6s;
         }
 
         .shooting-star:nth-child(10) {
             top: -10%;
             left: 95%;
             animation-delay: 5s;
-            animation-duration: 2.9s;
+            animation-duration: 4.4s;
         }
 
         @keyframes shootingStar {
@@ -502,22 +502,34 @@
                 transform: rotate(35deg) translate(0, 0);
             }
 
-            2% {
+            1% {
+                opacity: 0.3;
+            }
+
+            3% {
                 opacity: 1;
             }
 
-            20% {
-                opacity: 0.8;
+            15% {
+                opacity: 1;
             }
 
-            40% {
+            25% {
+                opacity: 0.6;
+            }
+
+            35% {
+                opacity: 0.2;
+            }
+
+            45% {
                 opacity: 0;
-                transform: rotate(35deg) translate(calc(100vw * 0.7), calc(100vh * 0.7));
+                transform: rotate(35deg) translate(calc(100vw * 0.8), calc(100vh * 0.8));
             }
 
             100% {
                 opacity: 0;
-                transform: rotate(35deg) translate(calc(100vw * 0.7), calc(100vh * 0.7));
+                transform: rotate(35deg) translate(calc(100vw * 0.8), calc(100vh * 0.8));
             }
         }
 
