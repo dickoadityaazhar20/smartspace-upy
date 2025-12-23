@@ -189,14 +189,15 @@
             width: 100%;
             max-width: 420px;
             padding: 40px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(139, 92, 246, 0.2) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             box-shadow:
                 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                inset 0 0 80px rgba(139, 92, 246, 0.1);
             animation: cardAppear 0.6s ease-out;
             margin: 20px;
         }
@@ -280,13 +281,13 @@
         }
 
         .form-input:focus {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(16, 185, 129, 0.5);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
         .input-wrapper:focus-within .input-icon {
-            color: #10B981;
+            color: #3B82F6;
         }
 
         /* SUBMIT BUTTON */
@@ -295,10 +296,10 @@
             padding: 16px;
             font-size: 15px;
             font-weight: 600;
-            color: #fff;
-            background: linear-gradient(135deg, #10B981, #059669);
+            color: #1e1b4b;
+            background: #fff;
             border: none;
-            border-radius: 12px;
+            border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 8px;
@@ -306,7 +307,8 @@
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+            background: #f0f0ff;
         }
 
         .submit-btn:active {
