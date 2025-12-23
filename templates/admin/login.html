@@ -1,11 +1,6 @@
-{% extends 'unfold/layouts/skeleton.html' %}
 {% load i18n static %}
-
-{% block title %}Login - SmartSpace Admin{% endblock %}
-
-{% block body %}
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
@@ -31,9 +26,7 @@
             position: relative;
         }
 
-        /* ============================================
-           ANIMATED GRADIENT BACKGROUND
-           ============================================ */
+        /* ANIMATED GRADIENT BACKGROUND */
         .bg-animated {
             position: fixed;
             inset: 0;
@@ -60,9 +53,7 @@
             }
         }
 
-        /* ============================================
-           FLOATING PARTICLES
-           ============================================ */
+        /* FLOATING PARTICLES */
         .particles {
             position: fixed;
             inset: 0;
@@ -171,9 +162,7 @@
             }
         }
 
-        /* ============================================
-           MESH GRADIENT OVERLAY
-           ============================================ */
+        /* MESH GRADIENT OVERLAY */
         .mesh-overlay {
             position: fixed;
             inset: 0;
@@ -195,9 +184,7 @@
             }
         }
 
-        /* ============================================
-           GLASSMORPHISM LOGIN CARD
-           ============================================ */
+        /* GLASSMORPHISM LOGIN CARD */
         .login-card {
             width: 100%;
             max-width: 420px;
@@ -211,6 +198,7 @@
                 0 25px 50px -12px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
             animation: cardAppear 0.6s ease-out;
+            margin: 20px;
         }
 
         @keyframes cardAppear {
@@ -225,9 +213,7 @@
             }
         }
 
-        /* ============================================
-           LOGO
-           ============================================ */
+        /* LOGO */
         .logo-container {
             text-align: center;
             margin-bottom: 32px;
@@ -248,9 +234,7 @@
             margin-top: 8px;
         }
 
-        /* ============================================
-           FORM STYLES
-           ============================================ */
+        /* FORM STYLES */
         .form-group {
             margin-bottom: 20px;
         }
@@ -301,14 +285,11 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
-        .form-input:focus+.input-icon,
         .input-wrapper:focus-within .input-icon {
             color: #10B981;
         }
 
-        /* ============================================
-           SUBMIT BUTTON
-           ============================================ */
+        /* SUBMIT BUTTON */
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -321,8 +302,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 8px;
-            position: relative;
-            overflow: hidden;
         }
 
         .submit-btn:hover {
@@ -334,9 +313,7 @@
             transform: translateY(0);
         }
 
-        /* ============================================
-           ERROR MESSAGES
-           ============================================ */
+        /* ERROR MESSAGES */
         .error-message {
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
@@ -356,9 +333,7 @@
             flex-shrink: 0;
         }
 
-        /* ============================================
-           FOOTER
-           ============================================ */
+        /* FOOTER */
         .login-footer {
             text-align: center;
             margin-top: 24px;
@@ -377,12 +352,8 @@
             color: #10B981;
         }
 
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
         @media (max-width: 480px) {
             .login-card {
-                margin: 20px;
                 padding: 32px 24px;
             }
 
@@ -436,7 +407,7 @@
         {% endif %}
 
         <!-- Login Form -->
-        <form method="post" action="{{ app_path }}">
+        <form method="post">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}">
 
@@ -465,9 +436,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="submit-btn">
-                <span>Masuk ke Dashboard</span>
-            </button>
+            <button type="submit" class="submit-btn">Masuk ke Dashboard</button>
         </form>
 
         <!-- Footer -->
@@ -478,4 +447,3 @@
 </body>
 
 </html>
-{% endblock %}
